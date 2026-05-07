@@ -5,9 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>清水園 在庫管理システム</title>
 
-<!-- ======================================================
-  ★ STEP 1: 下の firebaseConfig を自分のプロジェクトの値に書き換えてください
-  ====================================================== -->
 <script>
   const FIREBASE_CONFIG = {
     apiKey:            "AIzaSyAyTv98FVz_Z0yAu8pw3PjN0DAeujVdTkQ",
@@ -22,41 +19,35 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'Hiragino Kaku Gothic ProN',Meiryo,'Yu Gothic',sans-serif;background:#f2f2ed;color:#1a1a1a;min-height:100vh;font-size:15px}
-
-/* ヘッダー */
 .header{background:#1a1a1a;color:#fff;padding:0 24px;display:flex;align-items:center;gap:16px;height:52px;position:sticky;top:0;z-index:200}
 .header-brand{font-size:11px;color:#888;letter-spacing:.1em;text-transform:uppercase}
 .header-title{font-size:16px;font-weight:500;letter-spacing:.02em}
-
-/* ナビ */
-.nav{background:#fff;border-bottom:1px solid #e0e0d8;display:flex;padding:0 20px;overflow-x:auto;gap:4px}
-.nav-btn{border:none;background:none;padding:13px 18px;font-size:14px;cursor:pointer;color:#999;border-bottom:2px solid transparent;white-space:nowrap;font-family:inherit;transition:color .15s}
+.nav{background:#fff;border-bottom:1px solid #e0e0d8;display:flex;padding:0 20px;overflow-x:auto;gap:4px;position:sticky;top:52px;z-index:150}
+.nav-btn{border:none;background:none;padding:13px 16px;font-size:14px;cursor:pointer;color:#999;border-bottom:2px solid transparent;white-space:nowrap;font-family:inherit}
 .nav-btn.active{color:#1a1a1a;border-bottom-color:#1a1a1a;font-weight:500}
 .nav-btn:hover:not(.active){color:#555}
-
-/* レイアウト */
-.main{max-width:1100px;margin:0 auto;padding:28px 20px}
+.main{max-width:1200px;margin:0 auto;padding:28px 20px}
 .tab{display:none}.tab.active{display:block}
-
-/* カード */
 .card{background:#fff;border:1px solid #e0e0d8;border-radius:12px;overflow:hidden;margin-bottom:16px}
 .card-body{padding:20px 24px}
-
-/* 統計カード */
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
 @media(max-width:640px){.stats{grid-template-columns:repeat(2,1fr)}}
 .stat{background:#fff;border:1px solid #e0e0d8;border-radius:10px;padding:16px 18px}
-.stat-label{font-size:12px;color:#999;margin-bottom:6px;font-weight:500;letter-spacing:.03em}
-.stat-value{font-size:22px;font-weight:500;color:#1a1a1a}
-
-/* テーブル — 文字大きめ */
+.stat-label{font-size:12px;color:#999;margin-bottom:6px;font-weight:500}
+.stat-value{font-size:22px;font-weight:500}
 .tbl{width:100%;border-collapse:collapse}
-.tbl th{padding:12px 16px;text-align:left;font-size:13px;font-weight:600;color:#888;background:#fafaf7;border-bottom:1px solid #e8e8e0;letter-spacing:.03em;white-space:nowrap}
+.tbl th{padding:12px 16px;text-align:left;font-size:13px;font-weight:600;color:#888;background:#fafaf7;border-bottom:1px solid #e8e8e0;white-space:nowrap}
 .tbl td{padding:14px 16px;font-size:15px;border-bottom:1px solid #f0f0e8;vertical-align:middle}
 .tbl tbody tr:last-child td{border-bottom:none}
 .tbl tbody tr:hover td{background:#fafaf7}
-
-/* バッジ */
+.group-row{background:#fafaf7;cursor:pointer;user-select:none}
+.group-row:hover{background:#f0f0e8}
+.group-row td{font-weight:600;border-bottom:1px solid #e0e0d8 !important}
+.group-toggle{display:inline-block;width:14px;color:#888;transition:transform .15s;font-size:11px}
+.group-row.expanded .group-toggle{transform:rotate(90deg)}
+.field-row{display:none;background:#fff}
+.field-row.shown{display:table-row}
+.field-row td:first-child{padding-left:32px}
 .badge{display:inline-block;padding:4px 12px;border-radius:20px;font-size:13px;font-weight:600;white-space:nowrap}
 .badge-ok{background:#e8f5e9;color:#2e7d32}
 .badge-low{background:#fff8e1;color:#e65100}
@@ -64,57 +55,46 @@ body{font-family:'Hiragino Kaku Gothic ProN',Meiryo,'Yu Gothic',sans-serif;backg
 .badge-in{background:#e3f2fd;color:#1565c0}
 .badge-out{background:#fff3e0;color:#bf360c}
 .badge-move{background:#f3e5f5;color:#6a1b9a}
-
-/* フォーム */
+.field-chip{display:inline-block;padding:3px 10px;background:#e8eaf6;color:#3949ab;border-radius:16px;font-size:13px;font-weight:500}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
 @media(max-width:580px){.form-grid{grid-template-columns:1fr}}
 .fg{display:flex;flex-direction:column;gap:5px}
 .fg.full{grid-column:span 2}
 @media(max-width:580px){.fg.full{grid-column:span 1}}
-.fg label{font-size:12px;font-weight:600;color:#888;letter-spacing:.04em}
-input,select,textarea{padding:10px 12px;font-size:15px;border:1px solid #d8d8d0;border-radius:8px;background:#fff;font-family:inherit;width:100%;color:#1a1a1a;outline:none;transition:border-color .15s}
-input:focus,select:focus{border-color:#1a1a1a}
-input::placeholder{color:#bbb}
-
-/* ボタン */
-.btn{padding:10px 22px;font-size:14px;border:1px solid #d0d0c8;border-radius:8px;background:#fff;cursor:pointer;font-family:inherit;color:#1a1a1a;font-weight:500;transition:all .1s;white-space:nowrap}
+.fg label{font-size:12px;font-weight:600;color:#888}
+input,select,textarea{padding:10px 12px;font-size:15px;border:1px solid #d8d8d0;border-radius:8px;background:#fff;font-family:inherit;width:100%;color:#1a1a1a;outline:none}
+input:focus,select:focus,textarea:focus{border-color:#1a1a1a}
+input::placeholder,textarea::placeholder{color:#bbb}
+textarea{resize:vertical;min-height:140px;line-height:1.6}
+.btn{padding:10px 22px;font-size:14px;border:1px solid #d0d0c8;border-radius:8px;background:#fff;cursor:pointer;font-family:inherit;color:#1a1a1a;font-weight:500;white-space:nowrap}
 .btn:hover{background:#f5f5f0;border-color:#aaa}
-.btn:active{transform:scale(.98)}
 .btn-dark{background:#1a1a1a;color:#fff;border-color:#1a1a1a}
 .btn-dark:hover{background:#333}
 .btn-danger{color:#c62828;border-color:#e8c8c8}
 .btn-danger:hover{background:#fff5f5}
 .btn-sm{padding:6px 14px;font-size:13px}
 .btn-row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-
-/* 情報ボックス */
 .info-box{background:#f5f5f0;border-radius:8px;padding:12px 16px;font-size:14px;color:#555;border:1px solid #e8e8e0}
 .cost-box{background:#eff6ff;border-radius:8px;padding:12px 16px;font-size:14px;color:#1565c0;border:1px solid #d0e4f8;margin-bottom:14px;font-weight:500}
-
-/* サーチバー */
+.warn-box{background:#fff8e1;border:1px solid #f5d97a;border-radius:8px;padding:12px 16px;font-size:14px;color:#92400e;margin-bottom:14px}
 .search-bar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center}
-.search-bar input{flex:1;min-width:160px}
-
-/* セクションタイトル */
-.sec-title{font-size:16px;font-weight:500;margin-bottom:16px;color:#1a1a1a}
-
-/* 空 */
+.search-bar input[type=text]{flex:1;min-width:160px}
+.sec-title{font-size:16px;font-weight:500;margin-bottom:16px}
+.sec-sub{font-size:13px;color:#888;margin-bottom:14px}
 .empty{text-align:center;padding:56px 24px;color:#bbb;font-size:14px}
-
-/* モーダル */
-.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;align-items:center;justify-content:center}
+.overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:300;align-items:center;justify-content:center;padding:20px}
 .overlay.open{display:flex}
-.modal{background:#fff;border-radius:14px;padding:28px;width:92%;max-width:520px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.15)}
+.modal{background:#fff;border-radius:14px;padding:28px;width:100%;max-width:560px;max-height:90vh;overflow-y:auto}
 .modal h3{font-size:16px;font-weight:500;margin-bottom:20px}
-
-/* ローディング */
 .loading{text-align:center;padding:64px;color:#aaa;font-size:15px}
 .spin{display:inline-block;width:20px;height:20px;border:2px solid #ddd;border-top-color:#888;border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:8px}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* 設定未完了バナー */
 .setup-banner{background:#fffbeb;border:1px solid #f5d97a;border-radius:10px;padding:16px 20px;margin-bottom:20px;font-size:14px;color:#92400e}
-.setup-banner strong{display:block;font-size:15px;margin-bottom:4px}
+.list-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}
+.list-card{background:#fff;border:1px solid #e0e0d8;border-radius:10px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;gap:8px}
+.list-card-name{font-weight:600;font-size:15px}
+.list-card-sub{font-size:12px;color:#888;margin-top:2px}
+.list-card-actions{display:flex;gap:6px;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -126,8 +106,10 @@ input::placeholder{color:#bbb}
 
 <nav class="nav">
   <button class="nav-btn active" onclick="showTab('tab-list')">📋 在庫一覧</button>
-  <button class="nav-btn" onclick="showTab('tab-in')">📥 入庫登録</button>
-  <button class="nav-btn" onclick="showTab('tab-out')">📤 出庫登録</button>
+  <button class="nav-btn" onclick="showTab('tab-in')">📥 入庫</button>
+  <button class="nav-btn" onclick="showTab('tab-out')">📤 出庫</button>
+  <button class="nav-btn" onclick="showTab('tab-move')">🔄 圃場移動</button>
+  <button class="nav-btn" onclick="showTab('tab-field')">🌱 圃場</button>
   <button class="nav-btn" onclick="showTab('tab-supplier')">🏢 仕入先</button>
   <button class="nav-btn" onclick="showTab('tab-history')">📜 履歴</button>
 </nav>
@@ -135,45 +117,41 @@ input::placeholder{color:#bbb}
 <div class="main">
   <div id="loading" class="loading"><span class="spin"></span>読み込み中...</div>
 
-  <!-- 在庫一覧 -->
   <div id="tab-list" class="tab">
     <div id="stats" class="stats"></div>
     <div class="search-bar">
       <input type="text" id="filter-text" placeholder="🔍 樹種・仕入先で絞り込み..." oninput="renderList()">
+      <select id="filter-field" onchange="renderList()" style="min-width:160px"><option value="">すべての圃場</option></select>
       <select id="sort-key" onchange="renderList()">
         <option value="species">樹種順</option>
         <option value="qty">在庫数順</option>
-        <option value="buyPrice">仕入値順</option>
       </select>
-      <button class="btn" onclick="openAddModal()">＋ 品目追加</button>
+      <button class="btn" onclick="toggleAllGroups()">▼ 全展開/折畳</button>
     </div>
-    <div class="card" id="list-card"><div id="list-body"><div class="loading"><span class="spin"></span></div></div></div>
+    <div class="card"><div id="list-body"><div class="loading"><span class="spin"></span></div></div></div>
   </div>
 
-  <!-- 入庫登録 -->
   <div id="tab-in" class="tab">
     <div class="sec-title">入庫登録（仕入れ）</div>
     <div class="card"><div class="card-body">
       <div class="form-grid">
         <div class="fg"><label>仕入日</label><input type="date" id="in-date"></div>
+        <div class="fg"><label>圃場 ★</label><select id="in-field"></select></div>
         <div class="fg"><label>樹種名</label><input list="sp-list" id="in-species" placeholder="例：マキ"></div>
+        <div class="fg"><label>数量（本）</label><input type="number" min="1" id="in-qty" placeholder="例：10" oninput="calcTotal()"></div>
         <div class="fg"><label>規格 H（m）</label><input type="number" step="0.1" id="in-h" placeholder="例：1.5"></div>
         <div class="fg"><label>規格 C（m）</label><input type="number" step="0.01" id="in-c" placeholder="例：0.06"></div>
         <div class="fg"><label>規格 W（m）</label><input type="number" step="0.1" id="in-w" placeholder="例：1.0"></div>
-        <div class="fg"><label>数量（本）</label><input type="number" min="1" id="in-qty" placeholder="例：10" oninput="calcTotal()"></div>
         <div class="fg"><label>仕入値（円/本）</label><input type="number" id="in-price" placeholder="例：3500" oninput="calcTotal()"></div>
         <div class="fg"><label>仕入先</label><select id="in-supplier" onchange="toggleFree('in')"></select></div>
         <div class="fg full" id="in-free-wrap" style="display:none"><label>仕入先（直接入力）</label><input id="in-free"></div>
         <div class="fg full"><label>備考</label><input id="in-memo" placeholder="品質メモ・ロットなど"></div>
       </div>
       <div class="cost-box" id="cost-box" style="display:none"></div>
-      <div class="btn-row">
-        <button class="btn btn-dark" onclick="submitIn()">入庫登録</button>
-      </div>
+      <div class="btn-row"><button class="btn btn-dark" onclick="submitIn()">入庫登録</button></div>
     </div></div>
   </div>
 
-  <!-- 出庫登録 -->
   <div id="tab-out" class="tab">
     <div class="sec-title">出庫登録（出荷・損耗）</div>
     <div class="card"><div class="card-body">
@@ -182,26 +160,48 @@ input::placeholder{color:#bbb}
         <div class="fg"><label>区分</label>
           <select id="out-reason">
             <option value="出荷">出荷（販売）</option>
-            <option value="移植">移植</option>
             <option value="損耗">損耗・廃棄</option>
             <option value="その他">その他</option>
           </select>
         </div>
-        <div class="fg full"><label>品目選択</label><select id="out-item" onchange="updateOutInfo()"></select></div>
+        <div class="fg"><label>圃場で絞り込み</label><select id="out-field-filter" onchange="buildOutSelect()"><option value="">すべての圃場</option></select></div>
         <div class="fg"><label>数量（本）</label><input type="number" min="1" id="out-qty" oninput="updateOutInfo()"></div>
-        <div class="fg" id="out-info-wrap" style="display:none">
-          <label>在庫確認</label>
-          <div class="info-box" id="out-info"></div>
-        </div>
+        <div class="fg full"><label>品目選択</label><select id="out-item" onchange="updateOutInfo()"></select></div>
+        <div class="fg full" id="out-info-wrap" style="display:none"><label>在庫確認</label><div class="info-box" id="out-info"></div></div>
         <div class="fg full"><label>備考</label><input id="out-memo" placeholder="取引先名など"></div>
       </div>
-      <div class="btn-row">
-        <button class="btn btn-dark" onclick="submitOut()">出庫登録</button>
-      </div>
+      <div class="btn-row"><button class="btn btn-dark" onclick="submitOut()">出庫登録</button></div>
     </div></div>
   </div>
 
-  <!-- 仕入先管理 -->
+  <div id="tab-move" class="tab">
+    <div class="sec-title">圃場移動</div>
+    <div class="sec-sub">圃場間の移植・移動を記録します。元圃場から減らし、移動先圃場に増やします。</div>
+    <div class="card"><div class="card-body">
+      <div class="form-grid">
+        <div class="fg"><label>移動日</label><input type="date" id="mv-date"></div>
+        <div class="fg"><label>移動元 圃場</label><select id="mv-from-field" onchange="buildMoveSelect()"></select></div>
+        <div class="fg full"><label>移動する品目</label><select id="mv-item" onchange="updateMoveInfo()"></select></div>
+        <div class="fg"><label>移動先 圃場</label><select id="mv-to-field" onchange="updateMoveInfo()"></select></div>
+        <div class="fg"><label>数量（本）</label><input type="number" min="1" id="mv-qty" oninput="updateMoveInfo()"></div>
+        <div class="fg full" id="mv-info-wrap" style="display:none"><label>移動内容の確認</label><div class="info-box" id="mv-info"></div></div>
+        <div class="fg full"><label>備考</label><input id="mv-memo" placeholder="移動の理由など"></div>
+      </div>
+      <div class="btn-row"><button class="btn btn-dark" onclick="submitMove()">移動を記録</button></div>
+    </div></div>
+  </div>
+
+  <div id="tab-field" class="tab">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div class="sec-title" style="margin:0">圃場管理</div>
+      <div class="btn-row">
+        <button class="btn" onclick="openFieldBulkModal()">＋ 一括追加</button>
+        <button class="btn" onclick="openFieldModal()">＋ 1件追加</button>
+      </div>
+    </div>
+    <div class="card"><div class="card-body" id="field-body"></div></div>
+  </div>
+
   <div id="tab-supplier" class="tab">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
       <div class="sec-title" style="margin:0">仕入先管理</div>
@@ -210,7 +210,6 @@ input::placeholder{color:#bbb}
     <div class="card"><div id="sup-body"></div></div>
   </div>
 
-  <!-- 履歴 -->
   <div id="tab-history" class="tab">
     <div style="display:flex;gap:12px;align-items:center;margin-bottom:16px;flex-wrap:wrap">
       <div class="sec-title" style="margin:0">入出庫履歴</div>
@@ -218,214 +217,273 @@ input::placeholder{color:#bbb}
         <option value="">すべて</option>
         <option value="入庫">入庫</option>
         <option value="出荷">出荷</option>
-        <option value="移植">移植</option>
         <option value="損耗">損耗</option>
+        <option value="圃場移動">圃場移動</option>
       </select>
     </div>
     <div class="card"><div id="hist-body"></div></div>
   </div>
 </div>
 
-<!-- 品目モーダル -->
-<div class="overlay" id="item-modal">
-  <div class="modal">
-    <h3 id="modal-title">品目追加</h3>
-    <div class="form-grid">
-      <div class="fg"><label>樹種名</label><input list="sp-list" id="m-species" placeholder="例：マキ"></div>
-      <div class="fg"><label>規格 H（m）</label><input type="number" step="0.1" id="m-h" placeholder="例：1.5"></div>
-      <div class="fg"><label>規格 C（m）</label><input type="number" step="0.01" id="m-c" placeholder="例：0.06"></div>
-      <div class="fg"><label>規格 W（m）</label><input type="number" step="0.1" id="m-w" placeholder="例：1.0"></div>
-      <div class="fg"><label>仕入値（円/本）</label><input type="number" id="m-price" placeholder="例：3500"></div>
-      <div class="fg"><label>仕入先</label><select id="m-supplier" onchange="toggleFree('m')"></select></div>
-      <div class="fg full" id="m-free-wrap" style="display:none"><label>仕入先（直接入力）</label><input id="m-free"></div>
-      <div class="fg full"><label>備考</label><input id="m-memo" placeholder="品質メモなど"></div>
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-dark" onclick="saveItem()">保存</button>
-      <button class="btn" onclick="closeModal('item-modal')">キャンセル</button>
-    </div>
+<div class="overlay" id="item-modal"><div class="modal">
+  <h3>品目編集</h3>
+  <div class="form-grid">
+    <div class="fg"><label>樹種名</label><input list="sp-list" id="m-species"></div>
+    <div class="fg"><label>圃場</label><select id="m-field"></select></div>
+    <div class="fg"><label>規格 H（m）</label><input type="number" step="0.1" id="m-h"></div>
+    <div class="fg"><label>規格 C（m）</label><input type="number" step="0.01" id="m-c"></div>
+    <div class="fg"><label>規格 W（m）</label><input type="number" step="0.1" id="m-w"></div>
+    <div class="fg"><label>在庫数（本）</label><input type="number" id="m-qty"></div>
+    <div class="fg"><label>仕入値（円/本）</label><input type="number" id="m-price"></div>
+    <div class="fg"><label>仕入先</label><select id="m-supplier" onchange="toggleFree('m')"></select></div>
+    <div class="fg full" id="m-free-wrap" style="display:none"><label>仕入先（直接入力）</label><input id="m-free"></div>
+    <div class="fg full"><label>備考</label><input id="m-memo"></div>
   </div>
-</div>
+  <div class="btn-row"><button class="btn btn-dark" onclick="saveItem()">保存</button><button class="btn" onclick="closeModal('item-modal')">キャンセル</button></div>
+</div></div>
 
-<!-- 仕入先モーダル -->
-<div class="overlay" id="sup-modal">
-  <div class="modal">
-    <h3 id="sup-modal-title">仕入先追加</h3>
-    <div class="form-grid">
-      <div class="fg full"><label>仕入先名</label><input id="sm-name"></div>
-      <div class="fg"><label>電話番号</label><input id="sm-tel"></div>
-      <div class="fg"><label>備考</label><input id="sm-memo"></div>
-    </div>
-    <div class="btn-row">
-      <button class="btn btn-dark" onclick="saveSup()">保存</button>
-      <button class="btn" onclick="closeModal('sup-modal')">キャンセル</button>
-    </div>
+<div class="overlay" id="field-modal"><div class="modal">
+  <h3 id="field-modal-title">圃場追加</h3>
+  <div class="form-grid">
+    <div class="fg full"><label>圃場名</label><input id="fm-name" placeholder="例：第1圃場"></div>
+    <div class="fg full"><label>備考</label><input id="fm-memo" placeholder="場所や特徴など"></div>
   </div>
-</div>
+  <div class="btn-row"><button class="btn btn-dark" onclick="saveField()">保存</button><button class="btn" onclick="closeModal('field-modal')">キャンセル</button></div>
+</div></div>
+
+<div class="overlay" id="field-bulk-modal"><div class="modal">
+  <h3>圃場 一括追加</h3>
+  <div class="warn-box">圃場名を <strong>1行に1つずつ</strong> 入力（または貼り付け）してください。空行は無視されます。既に登録済みの名前は重複追加されません。</div>
+  <textarea id="fb-text" placeholder="第1圃場&#10;第2圃場&#10;山田ハウス&#10;..."></textarea>
+  <div style="font-size:13px;color:#888;margin:8px 0 14px" id="fb-count">0件</div>
+  <div class="btn-row"><button class="btn btn-dark" onclick="saveBulkFields()">一括追加</button><button class="btn" onclick="closeModal('field-bulk-modal')">キャンセル</button></div>
+</div></div>
+
+<div class="overlay" id="sup-modal"><div class="modal">
+  <h3 id="sup-modal-title">仕入先追加</h3>
+  <div class="form-grid">
+    <div class="fg full"><label>仕入先名</label><input id="sm-name"></div>
+    <div class="fg"><label>電話番号</label><input id="sm-tel"></div>
+    <div class="fg"><label>備考</label><input id="sm-memo"></div>
+  </div>
+  <div class="btn-row"><button class="btn btn-dark" onclick="saveSup()">保存</button><button class="btn" onclick="closeModal('sup-modal')">キャンセル</button></div>
+</div></div>
 
 <datalist id="sp-list">
-  <option value="マキ"><option value="サツキ"><option value="ツツジ">
-  <option value="ドウダン"><option value="モミジ"><option value="カシ">
-  <option value="クロマツ"><option value="アカマツ"><option value="ヒイラギ"><option value="イヌツゲ">
+  <option value="マキ"><option value="サツキ"><option value="ツツジ"><option value="ドウダン"><option value="モミジ">
+  <option value="カシ"><option value="クロマツ"><option value="アカマツ"><option value="ヒイラギ"><option value="イヌツゲ">
 </datalist>
 
-<!-- Firebase SDK -->
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
-
 <script>
-// ======== Firebase 初期化 ========
-var db;
-var configOk = FIREBASE_CONFIG.apiKey && !FIREBASE_CONFIG.apiKey.includes('ここに');
+var db,configOk=FIREBASE_CONFIG.apiKey&&!FIREBASE_CONFIG.apiKey.includes('ここに');
+if(configOk){firebase.initializeApp(FIREBASE_CONFIG);db=firebase.firestore();}
+else{document.getElementById('loading').innerHTML='<div class="setup-banner"><strong>⚙️ セットアップが必要です</strong>FIREBASE_CONFIGを設定してください。</div>';}
 
-if (configOk) {
-  firebase.initializeApp(FIREBASE_CONFIG);
-  db = firebase.firestore();
-} else {
-  document.getElementById('loading').innerHTML =
-    '<div class="setup-banner"><strong>⚙️ セットアップが必要です</strong>' +
-    'このHTMLファイルの上部にある <code>FIREBASE_CONFIG</code> にFirebaseの設定値を貼り付けてください。<br>' +
-    '設定方法は別紙の「セットアップ手順」をご参照ください。</div>';
+var inventory=[],suppliers=[],fields=[],history=[],editItemId=null,editSupId=null,editFieldId=null;
+var expandedGroups=new Set(),allExpanded=false;
+
+async function init(){
+  if(!configOk)return;
+  var today=new Date().toISOString().slice(0,10);
+  ['in-date','out-date','mv-date'].forEach(function(id){document.getElementById(id).value=today;});
+  document.getElementById('fb-text').addEventListener('input',function(e){
+    var n=e.target.value.split('\n').map(function(s){return s.trim();}).filter(Boolean).length;
+    document.getElementById('fb-count').textContent=n+'件';
+  });
+  try{await loadAll();document.getElementById('loading').style.display='none';showTab('tab-list');}
+  catch(e){document.getElementById('loading').innerHTML='<div class="setup-banner"><strong>接続エラー</strong>'+e.message+'</div>';}
 }
 
-// ======== データ ========
-var inventory = [];
-var suppliers = [];
-var history  = [];
-var editItemId = null;
-var editSupId  = null;
-
-// ======== 初期化 ========
-async function init() {
-  if (!configOk) return;
-  var today = new Date().toISOString().slice(0,10);
-  document.getElementById('in-date').value = today;
-  document.getElementById('out-date').value = today;
-  try {
-    await loadAll();
-    document.getElementById('loading').style.display = 'none';
-    showTab('tab-list');
-  } catch(e) {
-    document.getElementById('loading').innerHTML =
-      '<div class="setup-banner"><strong>接続エラー</strong>' + e.message + '</div>';
-  }
-}
-
-async function loadAll() {
-  var [invSnap, supSnap, hisSnap] = await Promise.all([
+async function loadAll(){
+  var [invSnap,supSnap,fldSnap,hisSnap]=await Promise.all([
     db.collection('inventory').get(),
     db.collection('suppliers').get(),
-    db.collection('history').orderBy('createdAt','desc').limit(200).get(),
+    db.collection('fields').get(),
+    db.collection('history').orderBy('createdAt','desc').limit(300).get(),
   ]);
-  inventory = invSnap.docs.map(d=>({id:d.id,...d.data()}));
-  suppliers  = supSnap.docs.map(d=>({id:d.id,...d.data()}));
-  history    = hisSnap.docs.map(d=>({id:d.id,...d.data()}));
-  buildSupSelects();
-  buildOutSelect();
+  inventory=invSnap.docs.map(function(d){return Object.assign({id:d.id},d.data());});
+  suppliers=supSnap.docs.map(function(d){return Object.assign({id:d.id},d.data());});
+  fields=fldSnap.docs.map(function(d){return Object.assign({id:d.id},d.data());}).sort(function(a,b){return (a.name||'').localeCompare(b.name||'','ja');});
+  history=hisSnap.docs.map(function(d){return Object.assign({id:d.id},d.data());});
+  buildSupSelects();buildFieldSelects();buildOutSelect();buildMoveSelect();
 }
 
-// ======== タブ ========
-var TABS = ['tab-list','tab-in','tab-out','tab-supplier','tab-history'];
-function showTab(id) {
-  TABS.forEach(function(t){ document.getElementById(t).style.display='none'; });
-  document.querySelectorAll('.nav-btn').forEach(function(b){ b.classList.remove('active'); });
-  document.getElementById(id).style.display = 'block';
+var TABS=['tab-list','tab-in','tab-out','tab-move','tab-field','tab-supplier','tab-history'];
+function showTab(id){
+  TABS.forEach(function(t){document.getElementById(t).style.display='none';});
+  document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
+  document.getElementById(id).style.display='block';
   document.querySelectorAll('.nav-btn')[TABS.indexOf(id)].classList.add('active');
-  if(id==='tab-list')     renderList();
-  if(id==='tab-supplier') renderSup();
-  if(id==='tab-history')  renderHistory();
+  if(id==='tab-list')renderList();
+  if(id==='tab-field')renderFields();
+  if(id==='tab-supplier')renderSup();
+  if(id==='tab-history')renderHistory();
 }
 
-// ======== 在庫一覧 ========
-function renderList() {
-  var f = v('filter-text'), sk = v('sort-key');
-  var sm = supMap();
-  var rows = inventory
-    .filter(function(i){ return !f || (i.species||'').includes(f) || (sm[i.supplierId]||'').includes(f) || (i.supplierFree||'').includes(f); })
-    .sort(function(a,b){
-      if(sk==='qty')      return (Number(b.qty)||0)-(Number(a.qty)||0);
-      if(sk==='buyPrice') return (Number(b.buyPrice)||0)-(Number(a.buyPrice)||0);
-      return (a.species||'').localeCompare(b.species||'','ja');
-    });
+function fieldMap(){var m={};fields.forEach(function(f){m[f.id]=f.name;});return m;}
+function fieldName(id){return fieldMap()[id]||(id?'(削除済)':'未設定');}
+function supMap(){var m={};suppliers.forEach(function(s){m[s.id]=s.name;});return m;}
 
-  var total = inventory.reduce(function(s,i){ return s+(Number(i.qty)||0); },0);
-  var kinds = new Set(inventory.map(function(i){ return i.species; })).size;
-  var val   = inventory.reduce(function(s,i){ return s+(Number(i.qty)||0)*(Number(i.buyPrice)||0); },0);
-  var cnt   = inventory.filter(function(i){ return Number(i.qty)>0; }).length;
-  document.getElementById('stats').innerHTML = [
-    {l:'総在庫数',v:fmt(total)+'本'},{l:'品目数',v:fmt(cnt)+'種'},
-    {l:'樹種数',v:fmt(kinds)+'種'},{l:'在庫評価額',v:'¥'+fmt(val)},
-  ].map(function(c){ return '<div class="stat"><div class="stat-label">'+c.l+'</div><div class="stat-value">'+c.v+'</div></div>'; }).join('');
-
-  if(!rows.length){
-    document.getElementById('list-body').innerHTML='<div class="empty">'+(inventory.length?'該当する品目がありません':'品目がありません。入庫登録から追加してください')+'</div>';
-    return;
-  }
-  var trs = rows.map(function(item){
-    var q = Number(item.qty)||0;
-    var bc = q<=0?'badge-zero':q<=5?'badge-low':'badge-ok';
-    var spec = mkSpec(item);
-    var sup = sm[item.supplierId]||item.supplierFree||'-';
-    return '<tr>'
-      +'<td style="font-weight:600">'+esc(item.species||'-')+'</td>'
-      +'<td style="color:#666">'+esc(spec)+'</td>'
-      +'<td><span class="badge '+bc+'">'+fmt(q)+' 本</span></td>'
-      +'<td>'+(item.buyPrice?'¥'+fmt(item.buyPrice):'-')+'</td>'
-      +'<td style="color:#666">'+esc(sup)+'</td>'
-      +'<td style="color:#888;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(item.memo||'')+'</td>'
-      +'<td style="white-space:nowrap">'
-        +'<button class="btn btn-sm" onclick="editItem(\''+item.id+'\')">編集</button> '
-        +'<button class="btn btn-sm btn-danger" onclick="delItem(\''+item.id+'\')">削除</button>'
-      +'</td></tr>';
-  }).join('');
-  document.getElementById('list-body').innerHTML =
-    '<table class="tbl"><thead><tr>'
-    +'<th>樹種</th><th>規格（H/C/W）</th><th>在庫数</th><th>仕入値</th><th>仕入先</th><th>備考</th><th></th>'
-    +'</tr></thead><tbody>'+trs+'</tbody></table>';
-}
-
-// ======== 入庫 ========
-function calcTotal() {
-  var q=Number(v('in-qty')),p=Number(v('in-price'));
-  var el=document.getElementById('cost-box');
-  if(q&&p){ el.style.display='block'; el.textContent='仕入総額：¥'+fmt(q*p); } else el.style.display='none';
-}
-
-async function submitIn() {
-  var species=v('in-species').trim(), qty=Number(v('in-qty'));
-  if(!species||!qty){alert('樹種と数量は必須です');return;}
-  var entry={species,specH:v('in-h'),specC:v('in-c'),specW:v('in-w'),qty,
-    buyPrice:v('in-price')||'',supplierId:v('in-supplier'),supplierFree:v('in-free'),memo:v('in-memo'),date:v('in-date')};
-  var existing=inventory.find(function(i){
-    return i.species===entry.species&&str(i.specH)===str(entry.specH)&&str(i.specC)===str(entry.specC)&&str(i.specW)===str(entry.specW);
+function buildFieldSelects(){
+  ['in-field','m-field','filter-field','out-field-filter','mv-from-field','mv-to-field'].forEach(function(id){
+    var sel=document.getElementById(id);if(!sel)return;
+    var cur=sel.value;
+    var hasAll=id==='filter-field'||id==='out-field-filter';
+    sel.innerHTML=hasAll?'<option value="">すべての圃場</option>':'<option value="">選択してください...</option>';
+    fields.forEach(function(f){var o=document.createElement('option');o.value=f.id;o.textContent=f.name;sel.appendChild(o);});
+    if(cur)sel.value=cur;
   });
-  if(existing){
-    var newQty=(Number(existing.qty)||0)+qty;
-    var upd={qty:newQty};
-    if(entry.buyPrice) upd.buyPrice=entry.buyPrice;
-    if(entry.supplierId) upd.supplierId=entry.supplierId;
-    await db.collection('inventory').doc(existing.id).update(upd);
-  } else {
-    await db.collection('inventory').add({...entry});
-  }
-  await db.collection('history').add({type:'入庫',...entry,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  await loadAll(); renderList(); buildOutSelect();
-  alert('✅ 入庫登録しました');
+}
+
+function buildSupSelects(){
+  ['in-supplier','m-supplier'].forEach(function(id){
+    var sel=document.getElementById(id);if(!sel)return;var cur=sel.value;
+    sel.innerHTML='<option value="">選択...</option>';
+    suppliers.forEach(function(s){var o=document.createElement('option');o.value=s.id;o.textContent=s.name;sel.appendChild(o);});
+    var other=document.createElement('option');other.value='__other__';other.textContent='その他（直接入力）';sel.appendChild(other);
+    if(cur)sel.value=cur;
+  });
+}
+function toggleFree(p){document.getElementById(p+'-free-wrap').style.display=v(p+'-supplier')==='__other__'?'block':'none';}
+
+// ========== 圃場一覧 ==========
+function renderFields(){
+  if(!fields.length){document.getElementById('field-body').innerHTML='<div class="empty">圃場が未登録です。「一括追加」または「1件追加」から登録してください。</div>';return;}
+  var counts={};
+  inventory.forEach(function(i){if(i.fieldId&&Number(i.qty)>0){counts[i.fieldId]=(counts[i.fieldId]||0)+Number(i.qty);}});
+  document.getElementById('field-body').innerHTML='<div class="list-cards">'+
+    fields.map(function(f){
+      var c=counts[f.id]||0;
+      return '<div class="list-card"><div><div class="list-card-name">'+esc(f.name)+'</div>'
+        +'<div class="list-card-sub">在庫 '+fmt(c)+' 本'+(f.memo?' · '+esc(f.memo):'')+'</div></div>'
+        +'<div class="list-card-actions">'
+        +'<button class="btn btn-sm" onclick="editField(\''+f.id+'\')">編集</button>'
+        +'<button class="btn btn-sm btn-danger" onclick="delField(\''+f.id+'\')">削除</button>'
+        +'</div></div>';
+    }).join('')+'</div>';
+}
+
+function openFieldModal(){editFieldId=null;document.getElementById('field-modal-title').textContent='圃場追加';['fm-name','fm-memo'].forEach(function(id){document.getElementById(id).value='';});openModal('field-modal');}
+function editField(id){var f=fields.find(function(x){return x.id===id;});if(!f)return;editFieldId=id;document.getElementById('field-modal-title').textContent='圃場編集';document.getElementById('fm-name').value=f.name||'';document.getElementById('fm-memo').value=f.memo||'';openModal('field-modal');}
+async function saveField(){var name=v('fm-name').trim();if(!name){alert('圃場名は必須です');return;}var data={name:name,memo:v('fm-memo')};if(editFieldId)await db.collection('fields').doc(editFieldId).update(data);else await db.collection('fields').add(data);await loadAll();closeModal('field-modal');renderFields();}
+async function delField(id){var inUse=inventory.filter(function(i){return i.fieldId===id&&Number(i.qty)>0;}).length;if(inUse>0){if(!confirm('この圃場には在庫が '+inUse+' 件あります。削除すると在庫の圃場が「未設定」になります。続行しますか？'))return;}else{if(!confirm('この圃場を削除しますか？'))return;}await db.collection('fields').doc(id).delete();await loadAll();renderFields();}
+
+function openFieldBulkModal(){document.getElementById('fb-text').value='';document.getElementById('fb-count').textContent='0件';openModal('field-bulk-modal');}
+async function saveBulkFields(){
+  var lines=v('fb-text').split('\n').map(function(s){return s.trim();}).filter(Boolean);
+  if(!lines.length){alert('1行以上の圃場名を入力してください');return;}
+  var existing=new Set(fields.map(function(f){return f.name;}));
+  var toAdd=[],skipped=0;
+  lines.forEach(function(name){if(existing.has(name)){skipped++;}else{existing.add(name);toAdd.push(name);}});
+  if(!toAdd.length){alert('すべて既に登録済みでした');return;}
+  if(!confirm(toAdd.length+'件を追加します'+(skipped?'（'+skipped+'件は重複のためスキップ）':'')+'。よろしいですか？'))return;
+  var batch=db.batch();
+  toAdd.forEach(function(name){var ref=db.collection('fields').doc();batch.set(ref,{name:name,memo:''});});
+  await batch.commit();
+  await loadAll();closeModal('field-bulk-modal');renderFields();
+  alert('✅ '+toAdd.length+'件を追加しました');
+}
+
+// ========== 在庫一覧 ==========
+function renderList(){
+  var f=v('filter-text'),fld=v('filter-field'),sk=v('sort-key');
+  var fm=fieldMap(),sm=supMap();
+  var items=inventory.filter(function(i){
+    if(fld&&i.fieldId!==fld)return false;
+    if(!f)return true;
+    return (i.species||'').includes(f)||(sm[i.supplierId]||'').includes(f)||(i.supplierFree||'').includes(f)||(fm[i.fieldId]||'').includes(f);
+  });
+  var total=items.reduce(function(s,i){return s+(Number(i.qty)||0);},0);
+  var spSet=new Set(items.map(function(i){return i.species;}));
+  var val=items.reduce(function(s,i){return s+(Number(i.qty)||0)*(Number(i.buyPrice)||0);},0);
+  document.getElementById('stats').innerHTML=[
+    {l:'総在庫数',v:fmt(total)+'本'},
+    {l:'樹種数',v:fmt(spSet.size)+'種'},
+    {l:'圃場数',v:fmt(fld?1:fields.length)+'箇所'},
+    {l:'在庫評価額',v:'¥'+fmt(val)},
+  ].map(function(c){return '<div class="stat"><div class="stat-label">'+c.l+'</div><div class="stat-value">'+c.v+'</div></div>';}).join('');
+
+  if(!items.length){document.getElementById('list-body').innerHTML='<div class="empty">'+(inventory.length?'該当する品目がありません':'品目がありません。入庫から登録してください')+'</div>';return;}
+
+  var groups={};
+  items.forEach(function(i){
+    var key=i.species+'|'+(i.specH||'')+'|'+(i.specC||'')+'|'+(i.specW||'');
+    if(!groups[key])groups[key]={key:key,species:i.species,specH:i.specH,specC:i.specC,specW:i.specW,total:0,items:[]};
+    groups[key].total+=Number(i.qty)||0;
+    groups[key].items.push(i);
+  });
+  var arr=Object.keys(groups).map(function(k){return groups[k];});
+  if(sk==='qty')arr.sort(function(a,b){return b.total-a.total;});
+  else arr.sort(function(a,b){return (a.species||'').localeCompare(b.species||'','ja');});
+
+  var html='<table class="tbl"><thead><tr><th>樹種・規格</th><th>圃場</th><th>在庫数</th><th>仕入値</th><th>仕入先</th><th>備考</th><th></th></tr></thead><tbody>';
+  arr.forEach(function(g){
+    var spec=mkSpec(g);
+    var expanded=allExpanded||expandedGroups.has(g.key);
+    var bc=g.total<=0?'badge-zero':g.total<=5?'badge-low':'badge-ok';
+    html+='<tr class="group-row'+(expanded?' expanded':'')+'" onclick="toggleGroup(\''+g.key+'\')">'
+      +'<td><span class="group-toggle">▶</span> '+esc(g.species||'-')+' <span style="color:#888;font-weight:400;font-size:13px"> '+esc(spec)+'</span></td>'
+      +'<td style="color:#888;font-size:13px">'+g.items.length+'圃場</td>'
+      +'<td><span class="badge '+bc+'">合計 '+fmt(g.total)+' 本</span></td>'
+      +'<td colspan="4" style="color:#888;font-size:13px">クリックで'+(expanded?'折りたたむ':'内訳を表示')+'</td>'
+      +'</tr>';
+    g.items.sort(function(a,b){return (fm[a.fieldId]||'').localeCompare(fm[b.fieldId]||'','ja');});
+    g.items.forEach(function(item){
+      var q=Number(item.qty)||0;
+      var ibc=q<=0?'badge-zero':q<=5?'badge-low':'badge-ok';
+      var sup=sm[item.supplierId]||item.supplierFree||'-';
+      html+='<tr class="field-row'+(expanded?' shown':'')+'">'
+        +'<td><span class="field-chip">'+esc(fieldName(item.fieldId))+'</span></td>'
+        +'<td></td>'
+        +'<td><span class="badge '+ibc+'">'+fmt(q)+' 本</span></td>'
+        +'<td>'+(item.buyPrice?'¥'+fmt(item.buyPrice):'-')+'</td>'
+        +'<td style="color:#666">'+esc(sup)+'</td>'
+        +'<td style="color:#888;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">'+esc(item.memo||'')+'</td>'
+        +'<td style="white-space:nowrap">'
+          +'<button class="btn btn-sm" onclick="editItem(\''+item.id+'\');event.stopPropagation()">編集</button> '
+          +'<button class="btn btn-sm btn-danger" onclick="delItem(\''+item.id+'\');event.stopPropagation()">削除</button>'
+        +'</td></tr>';
+    });
+  });
+  html+='</tbody></table>';
+  document.getElementById('list-body').innerHTML=html;
+}
+
+function toggleGroup(key){if(expandedGroups.has(key))expandedGroups.delete(key);else expandedGroups.add(key);renderList();}
+function toggleAllGroups(){allExpanded=!allExpanded;expandedGroups.clear();renderList();}
+
+// ========== 入庫 ==========
+function calcTotal(){var q=Number(v('in-qty')),p=Number(v('in-price'));var el=document.getElementById('cost-box');if(q&&p){el.style.display='block';el.textContent='仕入総額：¥'+fmt(q*p);}else el.style.display='none';}
+
+async function submitIn(){
+  var species=v('in-species').trim(),qty=Number(v('in-qty')),fieldId=v('in-field');
+  if(!species||!qty){alert('樹種と数量は必須です');return;}
+  if(!fieldId){alert('圃場を選択してください');return;}
+  var data={species:species,specH:v('in-h'),specC:v('in-c'),specW:v('in-w'),qty:qty,buyPrice:v('in-price')||'',supplierId:v('in-supplier'),supplierFree:v('in-free'),memo:v('in-memo'),fieldId:fieldId};
+  var existing=inventory.find(function(i){return i.fieldId===fieldId&&i.species===species&&str(i.specH)===str(data.specH)&&str(i.specC)===str(data.specC)&&str(i.specW)===str(data.specW);});
+  if(existing){var upd={qty:(Number(existing.qty)||0)+qty};if(data.buyPrice)upd.buyPrice=data.buyPrice;if(data.supplierId)upd.supplierId=data.supplierId;await db.collection('inventory').doc(existing.id).update(upd);}
+  else{await db.collection('inventory').add(data);}
+  await db.collection('history').add({type:'入庫',date:v('in-date'),fieldId:fieldId,species:species,specH:data.specH,specC:data.specC,specW:data.specW,qty:qty,buyPrice:data.buyPrice,supplierId:data.supplierId,supplierFree:data.supplierFree,memo:data.memo,createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  await loadAll();renderList();alert('✅ 入庫登録しました');
   ['in-species','in-h','in-c','in-w','in-qty','in-price','in-free','in-memo'].forEach(function(id){document.getElementById(id).value='';});
   document.getElementById('cost-box').style.display='none';
 }
 
-// ======== 出庫 ========
+// ========== 出庫 ==========
 function buildOutSelect(){
-  var sel=document.getElementById('out-item');
-  if(!sel)return;
+  var sel=document.getElementById('out-item');if(!sel)return;
+  var fld=v('out-field-filter');
   sel.innerHTML='<option value="">品目を選択してください...</option>';
-  inventory.filter(function(i){return Number(i.qty)>0;}).forEach(function(i){
-    var opt=document.createElement('option');
-    opt.value=i.id;
-    opt.textContent=(i.species||'')+(i.specH?' H'+i.specH:'')+(i.specC?' C'+i.specC:'')+(i.specW?' W'+i.specW:'')+' — 在庫:'+i.qty+'本';
-    sel.appendChild(opt);
-  });
+  inventory.filter(function(i){return Number(i.qty)>0&&(!fld||i.fieldId===fld);})
+    .sort(function(a,b){return (a.species||'').localeCompare(b.species||'','ja');})
+    .forEach(function(i){
+      var opt=document.createElement('option');opt.value=i.id;
+      var sp=mkSpec(i);
+      opt.textContent='['+fieldName(i.fieldId)+'] '+(i.species||'')+(sp?' '+sp:'')+' — 在庫:'+i.qty+'本';
+      sel.appendChild(opt);
+    });
 }
 
 function updateOutInfo(){
@@ -435,7 +493,7 @@ function updateOutInfo(){
   if(!item){wrap.style.display='none';return;}
   wrap.style.display='block';
   var after=Number(item.qty)-q;
-  info.innerHTML='現在在庫：<strong>'+item.qty+'本</strong>'+(q?'　出庫後：<strong style="color:'+(after<0?'#c62828':'#1a1a1a')+'">'+after+'本</strong>':'');
+  info.innerHTML='圃場：<strong>'+esc(fieldName(item.fieldId))+'</strong>　現在在庫：<strong>'+item.qty+'本</strong>'+(q?'　出庫後：<strong style="color:'+(after<0?'#c62828':'#1a1a1a')+'">'+after+'本</strong>':'');
 }
 
 async function submitOut(){
@@ -444,93 +502,119 @@ async function submitOut(){
   var item=inventory.find(function(i){return i.id===id;});
   if(!item){alert('品目が見つかりません');return;}
   if(qty>Number(item.qty)){alert('在庫数を超えています');return;}
-  var newQty=Number(item.qty)-qty;
-  await db.collection('inventory').doc(id).update({qty:newQty});
-  await db.collection('history').add({type:v('out-reason'),date:v('out-date'),species:item.species,specH:item.specH,specC:item.specC,specW:item.specW,qty,memo:v('out-memo'),createdAt:firebase.firestore.FieldValue.serverTimestamp()});
-  await loadAll(); renderList(); buildOutSelect();
-  alert('✅ 出庫登録しました');
+  await db.collection('inventory').doc(id).update({qty:Number(item.qty)-qty});
+  await db.collection('history').add({type:v('out-reason'),date:v('out-date'),fieldId:item.fieldId,species:item.species,specH:item.specH,specC:item.specC,specW:item.specW,qty:qty,memo:v('out-memo'),createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  await loadAll();renderList();alert('✅ 出庫登録しました');
   ['out-qty','out-memo'].forEach(function(id){document.getElementById(id).value='';});
-  document.getElementById('out-item').value='';
-  document.getElementById('out-info-wrap').style.display='none';
+  document.getElementById('out-item').value='';document.getElementById('out-info-wrap').style.display='none';
 }
 
-// ======== 仕入先 ========
-function buildSupSelects(){
-  ['in-supplier','m-supplier'].forEach(function(id){
-    var sel=document.getElementById(id);
-    if(!sel)return;
-    var cur=sel.value;
-    sel.innerHTML='<option value="">選択してください...</option>';
-    suppliers.forEach(function(s){var opt=document.createElement('option');opt.value=s.id;opt.textContent=s.name;sel.appendChild(opt);});
-    var other=document.createElement('option');other.value='__other__';other.textContent='その他（直接入力）';sel.appendChild(other);
-    if(cur)sel.value=cur;
-  });
+// ========== 圃場移動 ==========
+function buildMoveSelect(){
+  var sel=document.getElementById('mv-item');if(!sel)return;
+  var fromFld=v('mv-from-field');
+  sel.innerHTML='<option value="">品目を選択してください...</option>';
+  if(!fromFld)return;
+  inventory.filter(function(i){return Number(i.qty)>0&&i.fieldId===fromFld;})
+    .sort(function(a,b){return (a.species||'').localeCompare(b.species||'','ja');})
+    .forEach(function(i){
+      var opt=document.createElement('option');opt.value=i.id;
+      var sp=mkSpec(i);
+      opt.textContent=(i.species||'')+(sp?' '+sp:'')+' — 在庫:'+i.qty+'本';
+      sel.appendChild(opt);
+    });
+  updateMoveInfo();
 }
 
-function toggleFree(p){document.getElementById(p+'-free-wrap').style.display=v(p+'-supplier')==='__other__'?'block':'none';}
+function updateMoveInfo(){
+  var id=v('mv-item'),q=Number(v('mv-qty'))||0,toFld=v('mv-to-field');
+  var wrap=document.getElementById('mv-info-wrap'),info=document.getElementById('mv-info');
+  if(!id||!q){wrap.style.display='none';return;}
+  var item=inventory.find(function(i){return i.id===id;});
+  if(!item){wrap.style.display='none';return;}
+  wrap.style.display='block';
+  var after=Number(item.qty)-q;
+  info.innerHTML='<strong>'+esc(fieldName(item.fieldId))+'</strong>（残り：<strong style="color:'+(after<0?'#c62828':'#1a1a1a')+'">'+after+'本</strong>）→ <strong>'+esc(toFld?fieldName(toFld):'(未選択)')+'</strong>　数量：<strong>'+q+'本</strong>';
+}
 
+async function submitMove(){
+  var id=v('mv-item'),qty=Number(v('mv-qty')),toFld=v('mv-to-field');
+  if(!id||!qty||!toFld){alert('品目、数量、移動先を入力してください');return;}
+  var item=inventory.find(function(i){return i.id===id;});
+  if(!item){alert('品目が見つかりません');return;}
+  if(item.fieldId===toFld){alert('移動元と移動先が同じです');return;}
+  if(qty>Number(item.qty)){alert('在庫数を超えています');return;}
+  await db.collection('inventory').doc(id).update({qty:Number(item.qty)-qty});
+  var dst=inventory.find(function(i){return i.fieldId===toFld&&i.species===item.species&&str(i.specH)===str(item.specH)&&str(i.specC)===str(item.specC)&&str(i.specW)===str(item.specW)&&i.id!==id;});
+  if(dst){await db.collection('inventory').doc(dst.id).update({qty:(Number(dst.qty)||0)+qty});}
+  else{await db.collection('inventory').add({species:item.species,specH:item.specH,specC:item.specC,specW:item.specW,qty:qty,buyPrice:item.buyPrice||'',supplierId:item.supplierId||'',supplierFree:item.supplierFree||'',memo:item.memo||'',fieldId:toFld});}
+  await db.collection('history').add({type:'圃場移動',date:v('mv-date'),species:item.species,specH:item.specH,specC:item.specC,specW:item.specW,qty:qty,fromFieldId:item.fieldId,toFieldId:toFld,memo:v('mv-memo'),createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  await loadAll();renderList();alert('✅ 移動を記録しました');
+  ['mv-qty','mv-memo'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('mv-item').value='';document.getElementById('mv-to-field').value='';
+  document.getElementById('mv-info-wrap').style.display='none';
+}
+
+// ========== 仕入先 ==========
 function renderSup(){
   if(!suppliers.length){document.getElementById('sup-body').innerHTML='<div class="empty">仕入先が未登録です</div>';return;}
   document.getElementById('sup-body').innerHTML='<table class="tbl"><thead><tr><th>仕入先名</th><th>電話番号</th><th>備考</th><th></th></tr></thead><tbody>'+
     suppliers.map(function(s){return '<tr><td style="font-weight:600">'+esc(s.name)+'</td><td style="color:#666">'+esc(s.tel||'未登録')+'</td><td style="color:#888">'+esc(s.memo||'')+'</td>'
-      +'<td style="white-space:nowrap"><button class="btn btn-sm" onclick="editSup(\''+s.id+'\')">編集</button> <button class="btn btn-sm btn-danger" onclick="delSup(\''+s.id+'\')">削除</button></td></tr>';}).join('')
-    +'</tbody></table>';
+      +'<td style="white-space:nowrap"><button class="btn btn-sm" onclick="editSup(\''+s.id+'\')">編集</button> <button class="btn btn-sm btn-danger" onclick="delSup(\''+s.id+'\')">削除</button></td></tr>';}).join('')+'</tbody></table>';
 }
-
 function openSupModal(){editSupId=null;document.getElementById('sup-modal-title').textContent='仕入先追加';['sm-name','sm-tel','sm-memo'].forEach(function(id){document.getElementById(id).value='';});openModal('sup-modal');}
 function editSup(id){var s=suppliers.find(function(x){return x.id===id;});if(!s)return;editSupId=id;document.getElementById('sup-modal-title').textContent='仕入先編集';document.getElementById('sm-name').value=s.name||'';document.getElementById('sm-tel').value=s.tel||'';document.getElementById('sm-memo').value=s.memo||'';openModal('sup-modal');}
-
-async function saveSup(){
-  var name=v('sm-name').trim();if(!name){alert('仕入先名は必須です');return;}
-  var data={name,tel:v('sm-tel'),memo:v('sm-memo')};
-  if(editSupId) await db.collection('suppliers').doc(editSupId).update(data);
-  else await db.collection('suppliers').add(data);
-  await loadAll();closeModal('sup-modal');renderSup();
-}
-
+async function saveSup(){var name=v('sm-name').trim();if(!name){alert('仕入先名は必須です');return;}var data={name:name,tel:v('sm-tel'),memo:v('sm-memo')};if(editSupId)await db.collection('suppliers').doc(editSupId).update(data);else await db.collection('suppliers').add(data);await loadAll();closeModal('sup-modal');renderSup();}
 async function delSup(id){if(!confirm('削除しますか？'))return;await db.collection('suppliers').doc(id).delete();await loadAll();renderSup();}
 
-// ======== 品目モーダル ========
-function openAddModal(){editItemId=null;document.getElementById('modal-title').textContent='品目追加';['m-species','m-h','m-c','m-w','m-price','m-free','m-memo'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('m-supplier').value='';document.getElementById('m-free-wrap').style.display='none';openModal('item-modal');}
-function editItem(id){var item=inventory.find(function(i){return i.id===id;});if(!item)return;editItemId=id;document.getElementById('modal-title').textContent='品目編集';document.getElementById('m-species').value=item.species||'';document.getElementById('m-h').value=item.specH||'';document.getElementById('m-c').value=item.specC||'';document.getElementById('m-w').value=item.specW||'';document.getElementById('m-price').value=item.buyPrice||'';document.getElementById('m-supplier').value=item.supplierId||'';document.getElementById('m-free').value=item.supplierFree||'';document.getElementById('m-free-wrap').style.display=item.supplierId==='__other__'?'block':'none';document.getElementById('m-memo').value=item.memo||'';openModal('item-modal');}
-
-async function saveItem(){
-  var species=v('m-species').trim();if(!species){alert('樹種名は必須です');return;}
-  var data={species,specH:v('m-h'),specC:v('m-c'),specW:v('m-w'),buyPrice:v('m-price'),supplierId:v('m-supplier'),supplierFree:v('m-free'),memo:v('m-memo')};
-  if(editItemId) await db.collection('inventory').doc(editItemId).update(data);
-  else await db.collection('inventory').add({...data,qty:0});
-  await loadAll();closeModal('item-modal');renderList();buildOutSelect();
+// ========== 品目編集 ==========
+function editItem(id){
+  var item=inventory.find(function(i){return i.id===id;});if(!item)return;
+  editItemId=id;
+  document.getElementById('m-species').value=item.species||'';
+  document.getElementById('m-h').value=item.specH||'';
+  document.getElementById('m-c').value=item.specC||'';
+  document.getElementById('m-w').value=item.specW||'';
+  document.getElementById('m-qty').value=item.qty||0;
+  document.getElementById('m-price').value=item.buyPrice||'';
+  document.getElementById('m-field').value=item.fieldId||'';
+  document.getElementById('m-supplier').value=item.supplierId||'';
+  document.getElementById('m-free').value=item.supplierFree||'';
+  document.getElementById('m-free-wrap').style.display=item.supplierId==='__other__'?'block':'none';
+  document.getElementById('m-memo').value=item.memo||'';
+  openModal('item-modal');
 }
+async function saveItem(){if(!editItemId)return;var species=v('m-species').trim();if(!species){alert('樹種名は必須です');return;}var data={species:species,specH:v('m-h'),specC:v('m-c'),specW:v('m-w'),qty:Number(v('m-qty'))||0,buyPrice:v('m-price'),supplierId:v('m-supplier'),supplierFree:v('m-free'),memo:v('m-memo'),fieldId:v('m-field')};await db.collection('inventory').doc(editItemId).update(data);await loadAll();closeModal('item-modal');renderList();}
+async function delItem(id){if(!confirm('この品目を削除しますか？'))return;await db.collection('inventory').doc(id).delete();await loadAll();renderList();}
 
-async function delItem(id){if(!confirm('この品目を削除しますか？'))return;await db.collection('inventory').doc(id).delete();await loadAll();renderList();buildOutSelect();}
-
-// ======== 履歴 ========
+// ========== 履歴 ==========
 function renderHistory(){
-  var f=v('hist-filter'),sm=supMap();
+  var f=v('hist-filter'),fm=fieldMap();
   var rows=history.filter(function(h){return !f||h.type===f;});
   if(!rows.length){document.getElementById('hist-body').innerHTML='<div class="empty">履歴がありません</div>';return;}
-  var badgeClass=function(t){return t==='入庫'?'badge-in':t==='移植'?'badge-move':'badge-out';};
-  document.getElementById('hist-body').innerHTML='<table class="tbl"><thead><tr><th>日付</th><th>区分</th><th>樹種</th><th>規格</th><th>数量</th><th>仕入値</th><th>仕入先</th><th>備考</th></tr></thead><tbody>'+
+  var bClass=function(t){return t==='入庫'?'badge-in':t==='圃場移動'?'badge-move':'badge-out';};
+  document.getElementById('hist-body').innerHTML='<table class="tbl"><thead><tr><th>日付</th><th>区分</th><th>樹種</th><th>規格</th><th>数量</th><th>圃場</th><th>備考</th></tr></thead><tbody>'+
     rows.map(function(h){
+      var fldDisp='-';
+      if(h.type==='圃場移動'){fldDisp=esc(fm[h.fromFieldId]||'未設定')+' → '+esc(fm[h.toFieldId]||'未設定');}
+      else if(h.fieldId){fldDisp='<span class="field-chip">'+esc(fm[h.fieldId]||'未設定')+'</span>';}
       return '<tr>'
         +'<td style="white-space:nowrap">'+esc((h.date||'').replace(/-/g,'/'))+'</td>'
-        +'<td><span class="badge '+badgeClass(h.type)+'">'+esc(h.type||'-')+'</span></td>'
+        +'<td><span class="badge '+bClass(h.type)+'">'+esc(h.type||'-')+'</span></td>'
         +'<td style="font-weight:600">'+esc(h.species||'-')+'</td>'
-        +'<td style="color:#666">'+esc(mkSpec(h))+'</td>'
+        +'<td style="color:#666">'+esc(mkSpec(h)||'-')+'</td>'
         +'<td>'+fmt(h.qty)+'本</td>'
-        +'<td>'+(h.buyPrice?'¥'+fmt(h.buyPrice):'-')+'</td>'
-        +'<td style="color:#666">'+esc(sm[h.supplierId]||h.supplierFree||'-')+'</td>'
+        +'<td>'+fldDisp+'</td>'
         +'<td style="color:#888">'+esc(h.memo||'')+'</td></tr>';
     }).join('')+'</tbody></table>';
 }
 
-// ======== ユーティリティ ========
+// ========== ユーティリティ ==========
 function v(id){return (document.getElementById(id)||{value:''}).value||'';}
 function str(x){return String(x||'');}
 function fmt(n){return (n==null||n==='')?'-':Number(n).toLocaleString('ja-JP');}
 function esc(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
-function supMap(){var m={};suppliers.forEach(function(s){m[s.id]=s.name;});return m;}
-function mkSpec(item){return [item.specH&&('H'+item.specH),item.specC&&('C'+item.specC),item.specW&&('W'+item.specW)].filter(Boolean).join(' / ')||'-';}
+function mkSpec(item){return [item.specH&&('H'+item.specH),item.specC&&('C'+item.specC),item.specW&&('W'+item.specW)].filter(Boolean).join(' / ');}
 function openModal(id){document.getElementById(id).classList.add('open');}
 function closeModal(id){document.getElementById(id).classList.remove('open');}
 document.querySelectorAll('.overlay').forEach(function(el){el.addEventListener('click',function(e){if(e.target===el)el.classList.remove('open');});});
