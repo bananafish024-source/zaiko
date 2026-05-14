@@ -55,6 +55,27 @@ body{font-family:'Hiragino Kaku Gothic ProN',Meiryo,'Yu Gothic',sans-serif;backg
 .badge-in{background:#e3f2fd;color:#1565c0}
 .badge-out{background:#fff3e0;color:#bf360c}
 .badge-move{background:#f3e5f5;color:#6a1b9a}
+.badge-direct{background:#fce4ec;color:#c2185b}
+.badge-cash{background:#e0f2f1;color:#00695c;font-size:11px;padding:2px 8px}
+.badge-credit{background:#fff3e0;color:#e65100;font-size:11px;padding:2px 8px}
+.badge-unknown{background:#eceff1;color:#546e7a;font-size:11px;padding:2px 8px}
+.quick-wrap{overflow-x:auto;margin-bottom:14px}
+.quick-tbl{width:100%;border-collapse:collapse;font-size:13px;min-width:1100px}
+.quick-tbl th{background:#f5f5e8;padding:8px 6px;text-align:left;font-weight:600;color:#666;font-size:12px;border-bottom:1px solid #e0e0d0;white-space:nowrap}
+.quick-tbl td{padding:4px;border-bottom:1px solid #f0f0e8;vertical-align:middle}
+.quick-tbl input,.quick-tbl select{width:100%;padding:6px 4px;border:1px solid #ddd;border-radius:4px;font-size:13px;background:#fff;font-family:inherit}
+.quick-tbl input:focus,.quick-tbl select:focus{border-color:#2e7d32;outline:none;box-shadow:0 0 0 2px rgba(46,125,50,.1)}
+.quick-tbl .col-num{width:32px;text-align:center;color:#999;font-size:12px}
+.quick-tbl .col-type{width:90px}
+.quick-tbl .col-species{min-width:140px}
+.quick-tbl .col-spec{width:60px}
+.quick-tbl .col-qty{width:70px}
+.quick-tbl .col-price{width:90px}
+.quick-tbl .col-place{min-width:130px}
+.quick-tbl .col-memo{min-width:100px}
+.quick-tbl .col-del{width:30px;text-align:center}
+.quick-tbl .row-del{background:none;border:none;color:#c62828;cursor:pointer;font-size:18px;padding:0}
+.quick-sum{background:#f5f5e8;padding:10px 16px;border-radius:8px;margin-bottom:14px;font-weight:600;text-align:right}
 .field-chip{display:inline-block;padding:3px 10px;background:#e8eaf6;color:#3949ab;border-radius:16px;font-size:13px;font-weight:500}
 .form-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:16px}
 @media(max-width:580px){.form-grid{grid-template-columns:1fr}}
@@ -111,11 +132,16 @@ textarea{resize:vertical;min-height:140px;line-height:1.6}
 
 <nav class="nav">
   <button class="nav-btn active" onclick="showTab('tab-list')">📋 在庫一覧</button>
+  <button class="nav-btn" onclick="showTab('tab-quick-sale')">⚡ クイック販売</button>
+  <button class="nav-btn" onclick="showTab('tab-quick-buy')">⚡ クイック仕入</button>
   <button class="nav-btn" onclick="showTab('tab-in')">📥 入庫</button>
   <button class="nav-btn" onclick="showTab('tab-out')">📤 出庫</button>
+  <button class="nav-btn" onclick="showTab('tab-direct')">💰 直接販売</button>
   <button class="nav-btn" onclick="showTab('tab-move')">🔄 圃場移動</button>
   <button class="nav-btn" onclick="showTab('tab-field')">🌱 圃場</button>
   <button class="nav-btn" onclick="showTab('tab-supplier')">🏢 仕入先</button>
+  <button class="nav-btn" onclick="showTab('tab-customer')">🏷️ 販売先</button>
+  <button class="nav-btn" onclick="showTab('tab-summary')">📊 集計</button>
   <button class="nav-btn" onclick="showTab('tab-history')">📜 履歴</button>
 </nav>
 
@@ -134,6 +160,97 @@ textarea{resize:vertical;min-height:140px;line-height:1.6}
       <button class="btn" onclick="toggleAllGroups()">▼ 全展開/折畳</button>
     </div>
     <div class="card"><div id="list-body"><div class="loading"><span class="spin"></span></div></div></div>
+  </div>
+
+  <div id="tab-quick-sale" class="tab">
+    <div class="sec-title">⚡ クイック販売入力</div>
+    <div class="sec-sub">1取引で複数明細をまとめて入力できます。Tabキーで次の項目へ移動します。</div>
+    <div class="card"><div class="card-body">
+      <div class="form-grid">
+        <div class="fg"><label>日付</label><input type="date" id="qs-date"></div>
+        <div class="fg"><label>取引先</label><select id="qs-customer" onchange="toggleQsCustFree()" tabindex="1"></select></div>
+        <div class="fg" id="qs-cust-free-wrap" style="display:none"><label>取引先（直接入力）</label><input id="qs-cust-free" tabindex="2"></div>
+        <div class="fg"><label>支払方法</label>
+          <select id="qs-payment" tabindex="3">
+            <option value="">未確認</option>
+            <option value="現金">現金</option>
+            <option value="掛">掛</option>
+            <option value="振込">振込</option>
+          </select>
+        </div>
+      </div>
+      <div class="quick-wrap">
+        <table class="quick-tbl">
+          <thead>
+            <tr>
+              <th class="col-num">#</th>
+              <th class="col-type">区分</th>
+              <th class="col-species">樹種</th>
+              <th class="col-spec">H</th>
+              <th class="col-spec">C</th>
+              <th class="col-spec">W</th>
+              <th class="col-qty">数量</th>
+              <th class="col-price">売価</th>
+              <th class="col-price">仕入値</th>
+              <th class="col-place">圃場/仕入先</th>
+              <th class="col-memo">備考</th>
+              <th class="col-del"></th>
+            </tr>
+          </thead>
+          <tbody id="qs-rows"></tbody>
+        </table>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px">
+        <button class="btn btn-sm" onclick="qsAddRow()">＋ 行を追加</button>
+        <span style="color:#888;font-size:12px">Tabキーで右へ、最後の行末でTabを押すと自動で行が追加されます</span>
+      </div>
+      <div class="quick-sum" id="qs-summary">合計：0本　¥0</div>
+      <div class="btn-row">
+        <button class="btn btn-dark" onclick="qsSubmit()">✓ まとめて保存</button>
+        <button class="btn" onclick="qsClear()">クリア</button>
+      </div>
+    </div></div>
+  </div>
+
+  <div id="tab-quick-buy" class="tab">
+    <div class="sec-title">⚡ クイック仕入入力</div>
+    <div class="sec-sub">仕入伝票の複数明細をまとめて入力できます。Tabキーで次の項目へ移動します。</div>
+    <div class="card"><div class="card-body">
+      <div class="form-grid">
+        <div class="fg"><label>日付</label><input type="date" id="qb-date"></div>
+        <div class="fg"><label>仕入先</label><select id="qb-supplier" onchange="toggleQbSupFree()" tabindex="1"></select></div>
+        <div class="fg" id="qb-sup-free-wrap" style="display:none"><label>仕入先（直接入力）</label><input id="qb-sup-free" tabindex="2"></div>
+        <div class="fg"><label>伝票番号（任意）</label><input id="qb-voucher" placeholder="例：577757" tabindex="3"></div>
+      </div>
+      <div class="quick-wrap">
+        <table class="quick-tbl">
+          <thead>
+            <tr>
+              <th class="col-num">#</th>
+              <th class="col-species">樹種</th>
+              <th class="col-spec">H</th>
+              <th class="col-spec">C</th>
+              <th class="col-spec">W</th>
+              <th class="col-qty">数量</th>
+              <th class="col-price">仕入値</th>
+              <th class="col-place">圃場（入庫先）</th>
+              <th class="col-memo">備考</th>
+              <th class="col-del"></th>
+            </tr>
+          </thead>
+          <tbody id="qb-rows"></tbody>
+        </table>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center;margin-bottom:14px">
+        <button class="btn btn-sm" onclick="qbAddRow()">＋ 行を追加</button>
+        <span style="color:#888;font-size:12px">Tabキーで右へ、最後の行末でTabを押すと自動で行が追加されます</span>
+      </div>
+      <div class="quick-sum" id="qb-summary">合計：0本　¥0</div>
+      <div class="btn-row">
+        <button class="btn btn-dark" onclick="qbSubmit()">✓ まとめて保存</button>
+        <button class="btn" onclick="qbClear()">クリア</button>
+      </div>
+    </div></div>
   </div>
 
   <div id="tab-in" class="tab">
@@ -180,7 +297,18 @@ textarea{resize:vertical;min-height:140px;line-height:1.6}
           <div class="fg"><label>数量（本）</label><input type="number" min="1" id="out-qty" oninput="updateOutInfo()"></div>
           <div class="fg full"><label>品目選択</label><select id="out-item" onchange="updateOutInfo()"></select></div>
           <div class="fg full" id="out-info-wrap" style="display:none"><label>在庫確認</label><div class="info-box" id="out-info"></div></div>
-          <div class="fg full"><label>備考</label><input id="out-memo" placeholder="取引先名など"></div>
+          <div class="fg"><label>売価（円/本）</label><input type="number" id="out-sellprice" placeholder="例：5000"></div>
+          <div class="fg"><label>販売先</label><select id="out-customer" onchange="toggleCustFree('out')"></select></div>
+          <div class="fg full" id="out-cust-free-wrap" style="display:none"><label>販売先（直接入力）</label><input id="out-cust-free"></div>
+          <div class="fg"><label>支払方法</label>
+            <select id="out-payment">
+              <option value="">未確認</option>
+              <option value="現金">現金</option>
+              <option value="掛">掛</option>
+              <option value="振込">振込</option>
+            </select>
+          </div>
+          <div class="fg full"><label>備考</label><input id="out-memo" placeholder="補足情報"></div>
         </div>
         <div class="btn-row"><button class="btn btn-dark" onclick="submitOut()">出庫登録</button></div>
       </div>
@@ -202,11 +330,54 @@ textarea{resize:vertical;min-height:140px;line-height:1.6}
           <div class="fg"><label>規格 C（m）</label><input type="number" step="0.01" id="of-c" placeholder="例：0.06" tabindex="4"></div>
           <div class="fg"><label>規格 W（m）</label><input type="number" step="0.1" id="of-w" placeholder="例：1.0" tabindex="5"></div>
           <div class="fg"><label>数量（本）</label><input type="number" min="1" id="of-qty" placeholder="例：3" tabindex="6"></div>
-          <div class="fg full"><label>備考</label><input id="of-memo" placeholder="取引先名・特徴メモなど" tabindex="7"></div>
+          <div class="fg"><label>売価（円/本）</label><input type="number" id="of-sellprice" placeholder="例：5000"></div>
+          <div class="fg"><label>販売先</label><select id="of-customer" onchange="toggleCustFree('of')"></select></div>
+          <div class="fg full" id="of-cust-free-wrap" style="display:none"><label>販売先（直接入力）</label><input id="of-cust-free"></div>
+          <div class="fg"><label>支払方法</label>
+            <select id="of-payment">
+              <option value="">未確認</option>
+              <option value="現金">現金</option>
+              <option value="掛">掛</option>
+              <option value="振込">振込</option>
+            </select>
+          </div>
+          <div class="fg full"><label>備考</label><input id="of-memo" placeholder="補足情報" tabindex="7"></div>
         </div>
         <div class="btn-row"><button class="btn btn-dark" onclick="submitOutFree()">出荷記録（在庫変動なし）</button></div>
       </div>
 
+    </div></div>
+  </div>
+
+  <div id="tab-direct" class="tab">
+    <div class="sec-title">💰 直接販売（仕入れ即出荷）</div>
+    <div class="sec-sub">在庫を経由せずに、仕入れ→販売を1件として記録します。在庫数には影響しません。</div>
+    <div class="card"><div class="card-body">
+      <div class="form-grid">
+        <div class="fg"><label>取引日</label><input type="date" id="dr-date"></div>
+        <div class="fg"><label>支払方法</label>
+          <select id="dr-payment">
+            <option value="">未確認</option>
+            <option value="現金">現金</option>
+            <option value="掛">掛</option>
+            <option value="振込">振込</option>
+          </select>
+        </div>
+        <div class="fg"><label>仕入先</label><select id="dr-supplier" onchange="toggleFree('dr')" tabindex="1"></select></div>
+        <div class="fg full" id="dr-free-wrap" style="display:none"><label>仕入先（直接入力）</label><input id="dr-free"></div>
+        <div class="fg"><label>樹種名</label><input list="sp-list" id="dr-species" placeholder="例：マキ" tabindex="2"></div>
+        <div class="fg"><label>規格 H（m）</label><input type="number" step="0.1" id="dr-h" placeholder="例：1.5" tabindex="3"></div>
+        <div class="fg"><label>規格 C（m）</label><input type="number" step="0.01" id="dr-c" placeholder="例：0.06" tabindex="4"></div>
+        <div class="fg"><label>規格 W（m）</label><input type="number" step="0.1" id="dr-w" placeholder="例：1.0" tabindex="5"></div>
+        <div class="fg"><label>数量（本）</label><input type="number" min="1" id="dr-qty" placeholder="例：3" oninput="calcDirectTotal()" tabindex="6"></div>
+        <div class="fg"><label>仕入値（円/本）</label><input type="number" id="dr-buyprice" placeholder="例：3500" oninput="calcDirectTotal()"></div>
+        <div class="fg"><label>売価（円/本）</label><input type="number" id="dr-sellprice" placeholder="例：5000" oninput="calcDirectTotal()"></div>
+        <div class="fg"><label>販売先</label><select id="dr-customer" onchange="toggleCustFree('dr')"></select></div>
+        <div class="fg full" id="dr-cust-free-wrap" style="display:none"><label>販売先（直接入力）</label><input id="dr-cust-free"></div>
+        <div class="fg full"><label>備考</label><input id="dr-memo" placeholder="補足情報" tabindex="7"></div>
+      </div>
+      <div class="info-box" id="dr-profit" style="display:none;margin-bottom:14px"></div>
+      <div class="btn-row"><button class="btn btn-dark" onclick="submitDirect()">直接販売を記録</button></div>
     </div></div>
   </div>
 
@@ -246,6 +417,31 @@ textarea{resize:vertical;min-height:140px;line-height:1.6}
     <div class="card"><div id="sup-body"></div></div>
   </div>
 
+  <div id="tab-customer" class="tab">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+      <div class="sec-title" style="margin:0">販売先管理</div>
+      <button class="btn" onclick="openCustModal()">＋ 追加</button>
+    </div>
+    <div class="card"><div id="cust-body"></div></div>
+  </div>
+
+  <div id="tab-summary" class="tab">
+    <div class="sec-title">📊 売上・利益集計</div>
+    <div class="search-bar">
+      <select id="sum-period" onchange="renderSummary()">
+        <option value="month">月次</option>
+        <option value="year">年次</option>
+      </select>
+      <select id="sum-type" onchange="renderSummary()">
+        <option value="">すべての取引</option>
+        <option value="出荷">出荷（在庫からの販売）</option>
+        <option value="直接販売">直接販売</option>
+      </select>
+    </div>
+    <div id="sum-stats" class="stats"></div>
+    <div class="card"><div id="sum-body"></div></div>
+  </div>
+
   <div id="tab-history" class="tab">
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;flex-wrap:wrap;gap:10px">
       <div class="sec-title" style="margin:0">入出庫履歴</div>
@@ -257,6 +453,7 @@ textarea{resize:vertical;min-height:140px;line-height:1.6}
         <option value="">区分: すべて</option>
         <option value="入庫">入庫</option>
         <option value="出荷">出荷</option>
+        <option value="直接販売">直接販売</option>
         <option value="損耗">損耗</option>
         <option value="圃場移動">圃場移動</option>
         <option value="その他">その他</option>
@@ -323,6 +520,16 @@ textarea{resize:vertical;min-height:140px;line-height:1.6}
   <div class="btn-row"><button class="btn btn-dark" onclick="saveSup()">保存</button><button class="btn" onclick="closeModal('sup-modal')">キャンセル</button></div>
 </div></div>
 
+<div class="overlay" id="cust-modal"><div class="modal">
+  <h3 id="cust-modal-title">販売先追加</h3>
+  <div class="form-grid">
+    <div class="fg full"><label>販売先名</label><input id="cm-name"></div>
+    <div class="fg"><label>電話番号</label><input id="cm-tel"></div>
+    <div class="fg"><label>備考</label><input id="cm-memo"></div>
+  </div>
+  <div class="btn-row"><button class="btn btn-dark" onclick="saveCust()">保存</button><button class="btn" onclick="closeModal('cust-modal')">キャンセル</button></div>
+</div></div>
+
 <datalist id="sp-list">
   <option value="マキ"><option value="サツキ"><option value="ツツジ"><option value="ドウダン"><option value="モミジ">
   <option value="カシ"><option value="クロマツ"><option value="アカマツ"><option value="ヒイラギ"><option value="イヌツゲ">
@@ -335,13 +542,13 @@ var db,configOk=FIREBASE_CONFIG.apiKey&&!FIREBASE_CONFIG.apiKey.includes('ここ
 if(configOk){firebase.initializeApp(FIREBASE_CONFIG);db=firebase.firestore();}
 else{document.getElementById('loading').innerHTML='<div class="setup-banner"><strong>⚙️ セットアップが必要です</strong>FIREBASE_CONFIGを設定してください。</div>';}
 
-var inventory=[],suppliers=[],fields=[],histData=[],editItemId=null,editSupId=null,editFieldId=null;
+var inventory=[],suppliers=[],customers=[],fields=[],histData=[],editItemId=null,editSupId=null,editCustId=null,editFieldId=null;
 var expandedGroups=new Set(),allExpanded=false;
 
 async function init(){
   if(!configOk)return;
   var today=new Date().toISOString().slice(0,10);
-  ['in-date','out-date','mv-date','of-date'].forEach(function(id){document.getElementById(id).value=today;});
+  ['in-date','out-date','mv-date','of-date','dr-date','qs-date','qb-date'].forEach(function(id){document.getElementById(id).value=today;});
   document.getElementById('fb-text').addEventListener('input',function(e){
     var n=e.target.value.split('\n').map(function(s){return s.trim();}).filter(Boolean).length;
     document.getElementById('fb-count').textContent=n+'件';
@@ -351,20 +558,22 @@ async function init(){
 }
 
 async function loadAll(){
-  var [invSnap,supSnap,fldSnap,hisSnap]=await Promise.all([
+  var [invSnap,supSnap,custSnap,fldSnap,hisSnap]=await Promise.all([
     db.collection('inventory').get(),
     db.collection('suppliers').get(),
+    db.collection('customers').get(),
     db.collection('fields').get(),
     db.collection('history').limit(500).get(),
   ]);
   inventory=invSnap.docs.map(function(d){return Object.assign({id:d.id},d.data());});
   suppliers=supSnap.docs.map(function(d){return Object.assign({id:d.id},d.data());});
+  customers=custSnap.docs.map(function(d){return Object.assign({id:d.id},d.data());}).sort(function(a,b){return (a.name||'').localeCompare(b.name||'','ja');});
   fields=fldSnap.docs.map(function(d){return Object.assign({id:d.id},d.data());}).sort(function(a,b){return (a.name||'').localeCompare(b.name||'','ja');});
   histData=hisSnap.docs.map(function(d){return Object.assign({id:d.id},d.data());});
-  buildSupSelects();buildFieldSelects();buildOutSelect();buildMoveSelect();
+  buildSupSelects();buildCustSelects();buildFieldSelects();buildOutSelect();buildMoveSelect();
 }
 
-var TABS=['tab-list','tab-in','tab-out','tab-move','tab-field','tab-supplier','tab-history'];
+var TABS=['tab-list','tab-quick-sale','tab-quick-buy','tab-in','tab-out','tab-direct','tab-move','tab-field','tab-supplier','tab-customer','tab-summary','tab-history'];
 function showTab(id){
   TABS.forEach(function(t){document.getElementById(t).style.display='none';});
   document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
@@ -373,7 +582,11 @@ function showTab(id){
   if(id==='tab-list')renderList();
   if(id==='tab-field')renderFields();
   if(id==='tab-supplier')renderSup();
+  if(id==='tab-customer')renderCust();
+  if(id==='tab-summary')renderSummary();
   if(id==='tab-history')renderHistory();
+  if(id==='tab-quick-sale')qsInit();
+  if(id==='tab-quick-buy')qbInit();
 }
 
 function fieldMap(){var m={};fields.forEach(function(f){m[f.id]=f.name;});return m;}
@@ -393,7 +606,7 @@ function buildFieldSelects(){
 }
 
 function buildSupSelects(){
-  ['in-supplier','m-supplier'].forEach(function(id){
+  ['in-supplier','m-supplier','dr-supplier'].forEach(function(id){
     var sel=document.getElementById(id);if(!sel)return;var cur=sel.value;
     sel.innerHTML='<option value="">選択...</option>';
     suppliers.forEach(function(s){var o=document.createElement('option');o.value=s.id;o.textContent=s.name;sel.appendChild(o);});
@@ -401,6 +614,16 @@ function buildSupSelects(){
     if(cur)sel.value=cur;
   });
 }
+function buildCustSelects(){
+  ['out-customer','of-customer','dr-customer'].forEach(function(id){
+    var sel=document.getElementById(id);if(!sel)return;var cur=sel.value;
+    sel.innerHTML='<option value="">選択...</option>';
+    customers.forEach(function(c){var o=document.createElement('option');o.value=c.id;o.textContent=c.name;sel.appendChild(o);});
+    var other=document.createElement('option');other.value='__other__';other.textContent='その他（直接入力）';sel.appendChild(other);
+    if(cur)sel.value=cur;
+  });
+}
+function toggleCustFree(p){document.getElementById(p+'-cust-free-wrap').style.display=v(p+'-customer')==='__other__'?'block':'none';}
 function toggleFree(p){document.getElementById(p+'-free-wrap').style.display=v(p+'-supplier')==='__other__'?'block':'none';}
 
 // ========== 圃場一覧 ==========
@@ -558,10 +781,21 @@ async function submitOut(){
   if(!item){alert('品目が見つかりません');return;}
   if(qty>Number(item.qty)){alert('在庫数を超えています');return;}
   await db.collection('inventory').doc(id).update({qty:Number(item.qty)-qty});
-  await db.collection('history').add({type:v('out-reason'),date:v('out-date'),fieldId:item.fieldId,species:item.species,specH:item.specH,specC:item.specC,specW:item.specW,qty:qty,memo:v('out-memo'),createdAt:firebase.firestore.FieldValue.serverTimestamp()});
+  await db.collection('history').add({
+    type:v('out-reason'),date:v('out-date'),
+    fieldId:item.fieldId,species:item.species,specH:item.specH,specC:item.specC,specW:item.specW,
+    qty:qty,buyPrice:item.buyPrice||'',
+    sellPrice:v('out-sellprice')||'',
+    customerId:v('out-customer'),customerFree:v('out-cust-free'),
+    payment:v('out-payment'),
+    memo:v('out-memo'),
+    createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
   await loadAll();renderList();alert('✅ 出庫登録しました');
-  ['out-qty','out-memo'].forEach(function(id){document.getElementById(id).value='';});
-  document.getElementById('out-item').value='';document.getElementById('out-info-wrap').style.display='none';
+  ['out-qty','out-memo','out-sellprice','out-cust-free'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('out-item').value='';document.getElementById('out-customer').value='';document.getElementById('out-payment').value='';
+  document.getElementById('out-info-wrap').style.display='none';
+  document.getElementById('out-cust-free-wrap').style.display='none';
 }
 
 // ========== 出庫モード切替 ==========
@@ -581,14 +815,56 @@ async function submitOutFree(){
     species:species,
     specH:v('of-h'),specC:v('of-c'),specW:v('of-w'),
     qty:qty,
+    sellPrice:v('of-sellprice')||'',
+    customerId:v('of-customer'),customerFree:v('of-cust-free'),
+    payment:v('of-payment'),
     memo:'[自由入力] '+v('of-memo'),
     freeInput:true,
     createdAt:firebase.firestore.FieldValue.serverTimestamp()
   });
   await loadAll();
   alert('✅ 出荷記録を保存しました（在庫数は変動していません）');
-  ['of-species','of-h','of-c','of-w','of-qty','of-memo'].forEach(function(id){document.getElementById(id).value='';});
-  document.getElementById('of-field').value='';
+  ['of-species','of-h','of-c','of-w','of-qty','of-memo','of-sellprice','of-cust-free'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('of-field').value='';document.getElementById('of-customer').value='';document.getElementById('of-payment').value='';
+  document.getElementById('of-cust-free-wrap').style.display='none';
+}
+
+// ========== 直接販売（仕入れ即出荷） ==========
+function calcDirectTotal(){
+  var q=Number(v('dr-qty')),bp=Number(v('dr-buyprice')),sp=Number(v('dr-sellprice'));
+  var el=document.getElementById('dr-profit');
+  if(q&&(bp||sp)){
+    var buyTotal=q*bp,sellTotal=q*sp,profit=sellTotal-buyTotal;
+    var pct=bp>0?((sp-bp)/bp*100).toFixed(1):'-';
+    el.style.display='block';
+    el.innerHTML='仕入総額：<strong>¥'+fmt(buyTotal)+'</strong>　売上：<strong>¥'+fmt(sellTotal)+'</strong>　利益：<strong style="color:'+(profit<0?'#c62828':'#2e7d32')+'">¥'+fmt(profit)+'</strong>'+(pct!=='-'?'（利益率 '+pct+'%）':'');
+  }else el.style.display='none';
+}
+
+async function submitDirect(){
+  var species=v('dr-species').trim(),qty=Number(v('dr-qty'));
+  if(!species||!qty){alert('樹種と数量は必須です');return;}
+  await db.collection('history').add({
+    type:'直接販売',
+    date:v('dr-date'),
+    species:species,
+    specH:v('dr-h'),specC:v('dr-c'),specW:v('dr-w'),
+    qty:qty,
+    buyPrice:v('dr-buyprice')||'',
+    sellPrice:v('dr-sellprice')||'',
+    supplierId:v('dr-supplier'),supplierFree:v('dr-free'),
+    customerId:v('dr-customer'),customerFree:v('dr-cust-free'),
+    payment:v('dr-payment'),
+    memo:v('dr-memo'),
+    createdAt:firebase.firestore.FieldValue.serverTimestamp()
+  });
+  await loadAll();
+  alert('✅ 直接販売を記録しました');
+  ['dr-species','dr-h','dr-c','dr-w','dr-qty','dr-buyprice','dr-sellprice','dr-memo','dr-free','dr-cust-free'].forEach(function(id){document.getElementById(id).value='';});
+  document.getElementById('dr-supplier').value='';document.getElementById('dr-customer').value='';document.getElementById('dr-payment').value='';
+  document.getElementById('dr-free-wrap').style.display='none';
+  document.getElementById('dr-cust-free-wrap').style.display='none';
+  document.getElementById('dr-profit').style.display='none';
 }
 
 // ========== 圃場移動 ==========
@@ -649,6 +925,195 @@ function editSup(id){var s=suppliers.find(function(x){return x.id===id;});if(!s)
 async function saveSup(){var name=v('sm-name').trim();if(!name){alert('仕入先名は必須です');return;}var data={name:name,tel:v('sm-tel'),memo:v('sm-memo')};if(editSupId)await db.collection('suppliers').doc(editSupId).update(data);else await db.collection('suppliers').add(data);await loadAll();closeModal('sup-modal');renderSup();}
 async function delSup(id){if(!confirm('削除しますか？'))return;await db.collection('suppliers').doc(id).delete();await loadAll();renderSup();}
 
+// ========== 販売先（顧客） ==========
+function custMap(){var m={};customers.forEach(function(c){m[c.id]=c.name;});return m;}
+function renderCust(){
+  if(!customers.length){document.getElementById('cust-body').innerHTML='<div class="empty">販売先が未登録です。「追加」から登録するか、出庫・直接販売の入力時に「その他」を選んで直接入力もできます。</div>';return;}
+  document.getElementById('cust-body').innerHTML='<table class="tbl"><thead><tr><th>販売先名</th><th>電話番号</th><th>備考</th><th></th></tr></thead><tbody>'+
+    customers.map(function(c){return '<tr><td style="font-weight:600">'+esc(c.name)+'</td><td style="color:#666">'+esc(c.tel||'未登録')+'</td><td style="color:#888">'+esc(c.memo||'')+'</td>'
+      +'<td style="white-space:nowrap"><button class="btn btn-sm" onclick="editCust(\''+c.id+'\')">編集</button> <button class="btn btn-sm btn-danger" onclick="delCust(\''+c.id+'\')">削除</button></td></tr>';}).join('')+'</tbody></table>';
+}
+function openCustModal(){editCustId=null;document.getElementById('cust-modal-title').textContent='販売先追加';['cm-name','cm-tel','cm-memo'].forEach(function(id){document.getElementById(id).value='';});openModal('cust-modal');}
+function editCust(id){var c=customers.find(function(x){return x.id===id;});if(!c)return;editCustId=id;document.getElementById('cust-modal-title').textContent='販売先編集';document.getElementById('cm-name').value=c.name||'';document.getElementById('cm-tel').value=c.tel||'';document.getElementById('cm-memo').value=c.memo||'';openModal('cust-modal');}
+async function saveCust(){var name=v('cm-name').trim();if(!name){alert('販売先名は必須です');return;}var data={name:name,tel:v('cm-tel'),memo:v('cm-memo')};if(editCustId)await db.collection('customers').doc(editCustId).update(data);else await db.collection('customers').add(data);await loadAll();closeModal('cust-modal');renderCust();}
+async function delCust(id){if(!confirm('削除しますか？'))return;await db.collection('customers').doc(id).delete();await loadAll();renderCust();}
+
+// ========== クイック販売入力 ==========
+var qsRows=[];
+function qsInit(){
+  // Build customer select for qs
+  var sel=document.getElementById('qs-customer');var cur=sel.value;
+  sel.innerHTML='<option value="">選択...</option>';
+  customers.forEach(function(c){var o=document.createElement('option');o.value=c.id;o.textContent=c.name;sel.appendChild(o);});
+  var other=document.createElement('option');other.value='__other__';other.textContent='その他（直接入力）';sel.appendChild(other);
+  if(cur)sel.value=cur;
+  if(!qsRows.length){qsRows=[qsNewRow()];}
+  qsRender();
+}
+function qsNewRow(){return {type:'出庫',species:'',h:'',c:'',w:'',qty:'',sellPrice:'',buyPrice:'',place:'',memo:''};}
+function toggleQsCustFree(){document.getElementById('qs-cust-free-wrap').style.display=v('qs-customer')==='__other__'?'block':'none';}
+function qsRender(){
+  var fieldOpts=fields.map(function(f){return '<option value="f:'+f.id+'">圃場：'+esc(f.name)+'</option>';}).join('');
+  var supOpts=suppliers.map(function(s){return '<option value="s:'+s.id+'">仕入：'+esc(s.name)+'</option>';}).join('');
+  var placeOpts='<option value="">選択...</option>'+fieldOpts+supOpts;
+  document.getElementById('qs-rows').innerHTML=qsRows.map(function(r,i){
+    var typeOpts=['出庫','直接販売','損耗','その他'].map(function(t){return '<option value="'+t+'"'+(r.type===t?' selected':'')+'>'+t+'</option>';}).join('');
+    var ti=10+i*10;
+    return '<tr>'
+      +'<td class="col-num">'+(i+1)+'</td>'
+      +'<td><select onchange="qsUpd('+i+',\'type\',this.value)" tabindex="'+(ti)+'">'+typeOpts+'</select></td>'
+      +'<td><input list="sp-list" value="'+esc(r.species)+'" oninput="qsUpd('+i+',\'species\',this.value)" tabindex="'+(ti+1)+'"></td>'
+      +'<td><input type="number" step="0.1" value="'+esc(r.h)+'" oninput="qsUpd('+i+',\'h\',this.value)" tabindex="'+(ti+2)+'"></td>'
+      +'<td><input type="number" step="0.01" value="'+esc(r.c)+'" oninput="qsUpd('+i+',\'c\',this.value)" tabindex="'+(ti+3)+'"></td>'
+      +'<td><input type="number" step="0.1" value="'+esc(r.w)+'" oninput="qsUpd('+i+',\'w\',this.value)" tabindex="'+(ti+4)+'"></td>'
+      +'<td><input type="number" value="'+esc(r.qty)+'" oninput="qsUpd('+i+',\'qty\',this.value)" tabindex="'+(ti+5)+'"></td>'
+      +'<td><input type="number" value="'+esc(r.sellPrice)+'" oninput="qsUpd('+i+',\'sellPrice\',this.value)" tabindex="'+(ti+6)+'"></td>'
+      +'<td><input type="number" value="'+esc(r.buyPrice)+'" oninput="qsUpd('+i+',\'buyPrice\',this.value)" tabindex="'+(ti+7)+'" '+(r.type==='直接販売'?'':'disabled style="background:#f5f5f5"')+'></td>'
+      +'<td><select onchange="qsUpd('+i+',\'place\',this.value)" tabindex="'+(ti+8)+'">'+placeOpts.replace('value="'+r.place+'"','value="'+r.place+'" selected')+'</select></td>'
+      +'<td><input value="'+esc(r.memo)+'" oninput="qsUpd('+i+',\'memo\',this.value)" tabindex="'+(ti+9)+'" onkeydown="qsLastTab(event,'+i+')"></td>'
+      +'<td class="col-del"><button class="row-del" onclick="qsDel('+i+')" title="この行を削除">×</button></td>'
+      +'</tr>';
+  }).join('');
+  qsUpdateSum();
+}
+function qsUpd(i,k,val){qsRows[i][k]=val;if(k==='qty'||k==='sellPrice')qsUpdateSum();if(k==='type'){qsRender();setTimeout(function(){var inps=document.querySelectorAll('#qs-rows tr:nth-child('+(i+1)+') select, #qs-rows tr:nth-child('+(i+1)+') input');if(inps[1])inps[1].focus();},10);}}
+function qsAddRow(){qsRows.push(qsNewRow());qsRender();setTimeout(function(){var rows=document.querySelectorAll('#qs-rows tr');var last=rows[rows.length-1];if(last){var sp=last.querySelectorAll('input')[0];if(sp)sp.focus();}},10);}
+function qsLastTab(e,i){if(e.key==='Tab'&&!e.shiftKey&&i===qsRows.length-1){e.preventDefault();qsAddRow();}}
+function qsDel(i){if(qsRows.length<=1){qsRows=[qsNewRow()];}else{qsRows.splice(i,1);}qsRender();}
+function qsUpdateSum(){
+  var qty=0,total=0;
+  qsRows.forEach(function(r){var q=Number(r.qty)||0,p=Number(r.sellPrice)||0;qty+=q;total+=q*p;});
+  document.getElementById('qs-summary').textContent='合計：'+qty+'本　¥'+fmt(total);
+}
+function qsClear(){if(!confirm('入力内容をクリアしますか？'))return;qsRows=[qsNewRow()];document.getElementById('qs-customer').value='';document.getElementById('qs-cust-free').value='';document.getElementById('qs-payment').value='';document.getElementById('qs-cust-free-wrap').style.display='none';qsRender();}
+async function qsSubmit(){
+  var validRows=qsRows.filter(function(r){return r.species&&r.qty;});
+  if(!validRows.length){alert('保存できる明細がありません（樹種と数量は必須）');return;}
+  var date=v('qs-date'),custId=v('qs-customer')==='__other__'?'':v('qs-customer'),custFree=v('qs-customer')==='__other__'?v('qs-cust-free'):'',payment=v('qs-payment');
+  if(!confirm(validRows.length+'件の明細を保存します。よろしいですか？'))return;
+  var ok=0,err=0,errMsg=[];
+  for(var i=0;i<validRows.length;i++){
+    var r=validRows[i];
+    try{
+      var placeKind='',placeId='';
+      if(r.place){placeKind=r.place.split(':')[0];placeId=r.place.split(':')[1];}
+      if(r.type==='出庫'||r.type==='損耗'||r.type==='その他'){
+        // 圃場からの出庫：在庫から減算
+        var fldId=placeKind==='f'?placeId:'';
+        // find matching inventory
+        if(fldId&&r.type==='出庫'){
+          var item=inventory.find(function(it){return it.fieldId===fldId&&it.species===r.species&&String(it.specH||'')===String(r.h||'')&&String(it.specC||'')===String(r.c||'')&&String(it.specW||'')===String(r.w||'');});
+          if(item){
+            var newQty=Number(item.qty)-Number(r.qty);
+            if(newQty<0){errMsg.push('行'+(i+1)+': 在庫不足（'+r.species+'）');err++;continue;}
+            await db.collection('inventory').doc(item.id).update({qty:newQty});
+          }
+        }
+        await db.collection('history').add({
+          type:r.type,date:date,fieldId:fldId,species:r.species,
+          specH:r.h,specC:r.c,specW:r.w,qty:Number(r.qty),
+          sellPrice:r.sellPrice||'',customerId:custId,customerFree:custFree,payment:payment,
+          memo:r.memo,createdAt:firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }else if(r.type==='直接販売'){
+        var supId=placeKind==='s'?placeId:'';
+        await db.collection('history').add({
+          type:'直接販売',date:date,species:r.species,
+          specH:r.h,specC:r.c,specW:r.w,qty:Number(r.qty),
+          buyPrice:r.buyPrice||'',sellPrice:r.sellPrice||'',
+          supplierId:supId,customerId:custId,customerFree:custFree,payment:payment,
+          memo:r.memo,createdAt:firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+      ok++;
+    }catch(e){err++;errMsg.push('行'+(i+1)+': '+e.message);}
+  }
+  await loadAll();
+  var msg='✅ '+ok+'件保存しました';
+  if(err)msg+='\n⚠ '+err+'件エラー:\n'+errMsg.join('\n');
+  alert(msg);
+  if(err===0){qsRows=[qsNewRow()];qsRender();}
+}
+
+// ========== クイック仕入入力 ==========
+var qbRows=[];
+function qbInit(){
+  var sel=document.getElementById('qb-supplier');var cur=sel.value;
+  sel.innerHTML='<option value="">選択...</option>';
+  suppliers.forEach(function(s){var o=document.createElement('option');o.value=s.id;o.textContent=s.name;sel.appendChild(o);});
+  var other=document.createElement('option');other.value='__other__';other.textContent='その他（直接入力）';sel.appendChild(other);
+  if(cur)sel.value=cur;
+  if(!qbRows.length){qbRows=[qbNewRow()];}
+  qbRender();
+}
+function qbNewRow(){return {species:'',h:'',c:'',w:'',qty:'',buyPrice:'',fieldId:'',memo:''};}
+function toggleQbSupFree(){document.getElementById('qb-sup-free-wrap').style.display=v('qb-supplier')==='__other__'?'block':'none';}
+function qbRender(){
+  var fieldOpts='<option value="">選択...</option>'+fields.map(function(f){return '<option value="'+f.id+'">'+esc(f.name)+'</option>';}).join('');
+  document.getElementById('qb-rows').innerHTML=qbRows.map(function(r,i){
+    var ti=20+i*8;
+    return '<tr>'
+      +'<td class="col-num">'+(i+1)+'</td>'
+      +'<td><input list="sp-list" value="'+esc(r.species)+'" oninput="qbUpd('+i+',\'species\',this.value)" tabindex="'+(ti)+'"></td>'
+      +'<td><input type="number" step="0.1" value="'+esc(r.h)+'" oninput="qbUpd('+i+',\'h\',this.value)" tabindex="'+(ti+1)+'"></td>'
+      +'<td><input type="number" step="0.01" value="'+esc(r.c)+'" oninput="qbUpd('+i+',\'c\',this.value)" tabindex="'+(ti+2)+'"></td>'
+      +'<td><input type="number" step="0.1" value="'+esc(r.w)+'" oninput="qbUpd('+i+',\'w\',this.value)" tabindex="'+(ti+3)+'"></td>'
+      +'<td><input type="number" value="'+esc(r.qty)+'" oninput="qbUpd('+i+',\'qty\',this.value)" tabindex="'+(ti+4)+'"></td>'
+      +'<td><input type="number" value="'+esc(r.buyPrice)+'" oninput="qbUpd('+i+',\'buyPrice\',this.value)" tabindex="'+(ti+5)+'"></td>'
+      +'<td><select onchange="qbUpd('+i+',\'fieldId\',this.value)" tabindex="'+(ti+6)+'">'+fieldOpts.replace('value="'+r.fieldId+'"','value="'+r.fieldId+'" selected')+'</select></td>'
+      +'<td><input value="'+esc(r.memo)+'" oninput="qbUpd('+i+',\'memo\',this.value)" tabindex="'+(ti+7)+'" onkeydown="qbLastTab(event,'+i+')"></td>'
+      +'<td class="col-del"><button class="row-del" onclick="qbDel('+i+')" title="この行を削除">×</button></td>'
+      +'</tr>';
+  }).join('');
+  qbUpdateSum();
+}
+function qbUpd(i,k,val){qbRows[i][k]=val;if(k==='qty'||k==='buyPrice')qbUpdateSum();}
+function qbAddRow(){qbRows.push(qbNewRow());qbRender();setTimeout(function(){var rows=document.querySelectorAll('#qb-rows tr');var last=rows[rows.length-1];if(last){var sp=last.querySelectorAll('input')[0];if(sp)sp.focus();}},10);}
+function qbLastTab(e,i){if(e.key==='Tab'&&!e.shiftKey&&i===qbRows.length-1){e.preventDefault();qbAddRow();}}
+function qbDel(i){if(qbRows.length<=1){qbRows=[qbNewRow()];}else{qbRows.splice(i,1);}qbRender();}
+function qbUpdateSum(){
+  var qty=0,total=0;
+  qbRows.forEach(function(r){var q=Number(r.qty)||0,p=Number(r.buyPrice)||0;qty+=q;total+=q*p;});
+  document.getElementById('qb-summary').textContent='合計：'+qty+'本　¥'+fmt(total);
+}
+function qbClear(){if(!confirm('入力内容をクリアしますか？'))return;qbRows=[qbNewRow()];document.getElementById('qb-supplier').value='';document.getElementById('qb-sup-free').value='';document.getElementById('qb-voucher').value='';document.getElementById('qb-sup-free-wrap').style.display='none';qbRender();}
+async function qbSubmit(){
+  var validRows=qbRows.filter(function(r){return r.species&&r.qty;});
+  if(!validRows.length){alert('保存できる明細がありません（樹種と数量は必須）');return;}
+  var date=v('qb-date'),supId=v('qb-supplier')==='__other__'?'':v('qb-supplier'),supFree=v('qb-supplier')==='__other__'?v('qb-sup-free'):'',voucher=v('qb-voucher');
+  if(!confirm(validRows.length+'件の明細を保存します。よろしいですか？'))return;
+  var ok=0,err=0,errMsg=[];
+  for(var i=0;i<validRows.length;i++){
+    var r=validRows[i];
+    try{
+      // 入庫：在庫に加算（既存マッチを探す）
+      var existing=inventory.find(function(it){return it.fieldId===r.fieldId&&it.species===r.species&&String(it.specH||'')===String(r.h||'')&&String(it.specC||'')===String(r.c||'')&&String(it.specW||'')===String(r.w||'');});
+      if(existing){
+        await db.collection('inventory').doc(existing.id).update({qty:Number(existing.qty)+Number(r.qty)});
+      }else{
+        await db.collection('inventory').add({
+          species:r.species,specH:r.h,specC:r.c,specW:r.w,
+          qty:Number(r.qty),buyPrice:r.buyPrice||'',
+          supplierId:supId,supplierFree:supFree,fieldId:r.fieldId,memo:r.memo,
+          createdAt:firebase.firestore.FieldValue.serverTimestamp()
+        });
+      }
+      await db.collection('history').add({
+        type:'入庫',date:date,fieldId:r.fieldId,species:r.species,
+        specH:r.h,specC:r.c,specW:r.w,qty:Number(r.qty),
+        buyPrice:r.buyPrice||'',supplierId:supId,supplierFree:supFree,
+        memo:r.memo+(voucher?' [伝票'+voucher+']':''),createdAt:firebase.firestore.FieldValue.serverTimestamp()
+      });
+      ok++;
+    }catch(e){err++;errMsg.push('行'+(i+1)+': '+e.message);}
+  }
+  await loadAll();
+  var msg='✅ '+ok+'件保存しました';
+  if(err)msg+='\n⚠ '+err+'件エラー:\n'+errMsg.join('\n');
+  alert(msg);
+  if(err===0){qbRows=[qbNewRow()];qbRender();}
+}
+
 // ========== 品目編集 ==========
 function editItem(id){
   var item=inventory.find(function(i){return i.id===id;});if(!item)return;
@@ -680,21 +1145,27 @@ async function reloadHistory(){
 
 function renderHistory(){
   var typeFilter=v('hist-filter'),txt=v('hist-text').trim().toLowerCase(),sortKey=v('hist-sort')||'date',dir=v('hist-dir')||'desc';
-  var fm=fieldMap(),sm=supMap();
+  var fm=fieldMap(),sm=supMap(),cm=custMap();
 
   var getSupName=function(h){return sm[h.supplierId]||h.supplierFree||'';};
+  var getCustName=function(h){return cm[h.customerId]||h.customerFree||'';};
+  var getPartner=function(h){
+    // 取引先：入庫は仕入先、出庫系は販売先、直接販売は両方
+    if(h.type==='入庫')return getSupName(h);
+    if(h.type==='直接販売'){var s=getSupName(h),c=getCustName(h);return (s?'仕:'+s:'')+(s&&c?' / ':'')+(c?'販:'+c:'');}
+    return getCustName(h)||getSupName(h);
+  };
   var getFieldName=function(h){
     if(h.type==='圃場移動')return (fm[h.fromFieldId]||'')+' → '+(fm[h.toFieldId]||'');
     return fm[h.fieldId]||'';
   };
-  // 全項目を結合した検索対象テキスト
   var getHaystack=function(h){
     return [
       h.species,h.type,h.date,h.memo,
-      getFieldName(h),getSupName(h),
+      getFieldName(h),getSupName(h),getCustName(h),h.payment,
       h.specH&&('H'+h.specH),h.specC&&('C'+h.specC),h.specW&&('W'+h.specW),
       h.specH,h.specC,h.specW,
-      h.qty,h.buyPrice,
+      h.qty,h.buyPrice,h.sellPrice,
       h.qty&&(h.qty+'本')
     ].filter(Boolean).join(' ').toLowerCase();
   };
@@ -702,7 +1173,6 @@ function renderHistory(){
   var rows=histData.filter(function(h){
     if(typeFilter&&h.type!==typeFilter)return false;
     if(!txt)return true;
-    // スペース区切りで AND 検索（複数キーワードに対応）
     var keywords=txt.split(/\s+/).filter(Boolean);
     var hay=getHaystack(h);
     return keywords.every(function(k){return hay.indexOf(k)>=0;});
@@ -715,7 +1185,7 @@ function renderHistory(){
     if(sortKey==='date'){av=a.date||'';bv=b.date||'';}
     else if(sortKey==='field'){av=getFieldName(a);bv=getFieldName(b);}
     else if(sortKey==='species'){av=a.species||'';bv=b.species||'';}
-    else if(sortKey==='supplier'){av=getSupName(a);bv=getSupName(b);}
+    else if(sortKey==='supplier'){av=getPartner(a);bv=getPartner(b);}
     else if(sortKey==='specH'){av=Number(a.specH)||0;bv=Number(b.specH)||0;}
     else if(sortKey==='specC'){av=Number(a.specC)||0;bv=Number(b.specC)||0;}
     else if(sortKey==='specW'){av=Number(a.specW)||0;bv=Number(b.specW)||0;}
@@ -725,13 +1195,16 @@ function renderHistory(){
   rows.sort(cmp);
   if(dir==='desc')rows.reverse();
 
-  var bClass=function(t){return t==='入庫'?'badge-in':t==='圃場移動'?'badge-move':'badge-out';};
+  var bClass=function(t){return t==='入庫'?'badge-in':t==='圃場移動'?'badge-move':t==='直接販売'?'badge-direct':'badge-out';};
+  var pClass=function(p){return p==='現金'?'badge-cash':p==='掛'||p==='振込'?'badge-credit':'badge-unknown';};
   document.getElementById('hist-body').innerHTML='<div style="padding:10px 16px;font-size:13px;color:#888;border-bottom:1px solid #f0f0e8">'+rows.length+'件 / 全'+histData.length+'件中</div>'
-    +'<table class="tbl"><thead><tr><th>日付</th><th>区分</th><th>樹種</th><th>規格</th><th>数量</th><th>圃場</th><th>取引先</th><th>備考</th></tr></thead><tbody>'+
+    +'<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>日付</th><th>区分</th><th>樹種</th><th>規格</th><th>数量</th><th>圃場</th><th>取引先</th><th>仕入値</th><th>売価</th><th>支払</th><th>備考</th></tr></thead><tbody>'+
     rows.map(function(h){
       var fldDisp='-';
       if(h.type==='圃場移動'){fldDisp=esc(fm[h.fromFieldId]||'未設定')+' → '+esc(fm[h.toFieldId]||'未設定');}
       else if(h.fieldId){fldDisp='<span class="field-chip">'+esc(fm[h.fieldId]||'未設定')+'</span>';}
+      var partner=getPartner(h);
+      var payDisp=h.payment?'<span class="badge '+pClass(h.payment)+'">'+esc(h.payment)+'</span>':'-';
       return '<tr>'
         +'<td style="white-space:nowrap">'+esc((h.date||'').replace(/-/g,'/'))+'</td>'
         +'<td><span class="badge '+bClass(h.type)+'">'+esc(h.type||'-')+'</span></td>'
@@ -739,9 +1212,79 @@ function renderHistory(){
         +'<td style="color:#666">'+esc(mkSpec(h)||'-')+'</td>'
         +'<td>'+fmt(h.qty)+'本</td>'
         +'<td>'+fldDisp+'</td>'
-        +'<td style="color:#666">'+esc(getSupName(h)||'-')+'</td>'
-        +'<td style="color:#888;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(h.memo||'')+'">'+esc(h.memo||'')+'</td></tr>';
-    }).join('')+'</tbody></table>';
+        +'<td style="color:#666">'+esc(partner||'-')+'</td>'
+        +'<td style="color:#666">'+(h.buyPrice?'¥'+fmt(h.buyPrice):'-')+'</td>'
+        +'<td style="color:#666">'+(h.sellPrice?'¥'+fmt(h.sellPrice):'-')+'</td>'
+        +'<td>'+payDisp+'</td>'
+        +'<td style="color:#888;max-width:160px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap" title="'+esc(h.memo||'')+'">'+esc(h.memo||'')+'</td></tr>';
+    }).join('')+'</tbody></table></div>';
+}
+
+// ========== 集計 ==========
+function renderSummary(){
+  var period=v('sum-period')||'month',typeFilter=v('sum-type');
+  // 売上系の取引のみ
+  var rows=histData.filter(function(h){
+    if(!(h.type==='出荷'||h.type==='直接販売'))return false;
+    if(typeFilter&&h.type!==typeFilter)return false;
+    return true;
+  });
+
+  // 期間別にグループ化
+  var groups={};
+  rows.forEach(function(h){
+    var d=h.date||'';
+    if(!d)return;
+    var key=period==='year'?d.slice(0,4):d.slice(0,7);
+    if(!groups[key])groups[key]={key:key,sellTotal:0,buyTotal:0,qty:0,count:0,cash:0,credit:0,unknown:0,direct:0,stock:0};
+    var q=Number(h.qty)||0;
+    var bp=Number(h.buyPrice)||0,sp=Number(h.sellPrice)||0;
+    groups[key].sellTotal+=q*sp;
+    groups[key].buyTotal+=q*bp;
+    groups[key].qty+=q;
+    groups[key].count++;
+    if(h.payment==='現金')groups[key].cash+=q*sp;
+    else if(h.payment==='掛'||h.payment==='振込')groups[key].credit+=q*sp;
+    else groups[key].unknown+=q*sp;
+    if(h.type==='直接販売')groups[key].direct+=q*sp;
+    else groups[key].stock+=q*sp;
+  });
+  var arr=Object.values(groups).sort(function(a,b){return b.key.localeCompare(a.key);});
+
+  // 全体統計
+  var totalSell=arr.reduce(function(s,g){return s+g.sellTotal;},0);
+  var totalBuy=arr.reduce(function(s,g){return s+g.buyTotal;},0);
+  var totalProfit=totalSell-totalBuy;
+  var totalQty=arr.reduce(function(s,g){return s+g.qty;},0);
+  document.getElementById('sum-stats').innerHTML=[
+    {l:'売上合計',v:'¥'+fmt(totalSell)},
+    {l:'仕入合計',v:'¥'+fmt(totalBuy)},
+    {l:'利益合計',v:'¥'+fmt(totalProfit)},
+    {l:'取引数量',v:fmt(totalQty)+'本'},
+  ].map(function(c){return '<div class="stat"><div class="stat-label">'+c.l+'</div><div class="stat-value">'+c.v+'</div></div>';}).join('');
+
+  if(!arr.length){document.getElementById('sum-body').innerHTML='<div class="empty">集計対象の取引がありません。出荷または直接販売を記録してください。</div>';return;}
+
+  document.getElementById('sum-body').innerHTML='<div style="overflow-x:auto"><table class="tbl"><thead><tr><th>'+(period==='year'?'年':'月')+'</th><th>取引数</th><th>数量</th><th>売上</th><th>仕入</th><th>利益</th><th>利益率</th><th>現金</th><th>掛/振込</th><th>未確認</th><th>直接販売</th><th>在庫から</th></tr></thead><tbody>'+
+    arr.map(function(g){
+      var profit=g.sellTotal-g.buyTotal;
+      var rate=g.buyTotal>0?((profit/g.buyTotal)*100).toFixed(1)+'%':'-';
+      var profColor=profit<0?'#c62828':'#2e7d32';
+      return '<tr>'
+        +'<td style="font-weight:600">'+esc(g.key)+'</td>'
+        +'<td>'+g.count+'件</td>'
+        +'<td>'+fmt(g.qty)+'本</td>'
+        +'<td>¥'+fmt(g.sellTotal)+'</td>'
+        +'<td style="color:#666">¥'+fmt(g.buyTotal)+'</td>'
+        +'<td style="color:'+profColor+';font-weight:600">¥'+fmt(profit)+'</td>'
+        +'<td style="color:'+profColor+'">'+rate+'</td>'
+        +'<td style="color:#00695c">¥'+fmt(g.cash)+'</td>'
+        +'<td style="color:#e65100">¥'+fmt(g.credit)+'</td>'
+        +'<td style="color:#888">¥'+fmt(g.unknown)+'</td>'
+        +'<td style="color:#c2185b">¥'+fmt(g.direct)+'</td>'
+        +'<td style="color:#1565c0">¥'+fmt(g.stock)+'</td>'
+        +'</tr>';
+    }).join('')+'</tbody></table></div>';
 }
 
 // ========== ユーティリティ ==========
