@@ -143,6 +143,7 @@ textarea{resize:vertical;min-height:140px;line-height:1.6}
   <button class="nav-btn" onclick="showTab('tab-customer')">🏷️ 販売先</button>
   <button class="nav-btn" onclick="showTab('tab-summary')">📊 集計</button>
   <button class="nav-btn" onclick="showTab('tab-history')">📜 履歴</button>
+  <button class="nav-btn" onclick="showTab('tab-settings')">⚙️ 設定</button>
 </nav>
 
 <div class="main">
@@ -474,6 +475,31 @@ textarea{resize:vertical;min-height:140px;line-height:1.6}
     </div>
     <div class="card"><div id="hist-body"></div></div>
   </div>
+
+  <div id="tab-settings" class="tab">
+    <div class="sec-title">⚙️ 設定・メンテナンス</div>
+    <div class="card"><div class="card-body">
+      <h3 style="margin-top:0;font-size:15px;color:#444">データのリセット</h3>
+      <div class="warn-box">
+        <strong>取引・在庫・履歴データをすべて削除します。</strong><br>
+        圃場マスタ・仕入先マスタ・販売先マスタは残ります。<br>
+        この操作は取り消せません。テスト用データを片付けて、本番運用を始めるときに使ってください。
+      </div>
+      <div class="fg" style="max-width:340px;margin-bottom:14px">
+        <label>確認のため「リセット」と入力してください</label>
+        <input id="reset-confirm" placeholder="リセット">
+      </div>
+      <div class="btn-row">
+        <button class="btn btn-danger" onclick="doReset()">取引・在庫・履歴をすべて削除</button>
+      </div>
+      <div id="reset-status" style="margin-top:12px;font-size:13px"></div>
+    </div></div>
+
+    <div class="card" style="margin-top:16px"><div class="card-body">
+      <h3 style="margin-top:0;font-size:15px;color:#444">データ件数</h3>
+      <div id="settings-counts" style="font-size:13px;color:#666;line-height:1.9"></div>
+    </div></div>
+  </div>
 </div>
 
 <div class="overlay" id="item-modal"><div class="modal">
@@ -573,7 +599,7 @@ async function loadAll(){
   buildSupSelects();buildCustSelects();buildFieldSelects();buildOutSelect();buildMoveSelect();
 }
 
-var TABS=['tab-list','tab-quick-sale','tab-quick-buy','tab-in','tab-out','tab-direct','tab-move','tab-field','tab-supplier','tab-customer','tab-summary','tab-history'];
+var TABS=['tab-list','tab-quick-sale','tab-quick-buy','tab-in','tab-out','tab-direct','tab-move','tab-field','tab-supplier','tab-customer','tab-summary','tab-history','tab-settings'];
 function showTab(id){
   TABS.forEach(function(t){document.getElementById(t).style.display='none';});
   document.querySelectorAll('.nav-btn').forEach(function(b){b.classList.remove('active');});
@@ -585,6 +611,7 @@ function showTab(id){
   if(id==='tab-customer')renderCust();
   if(id==='tab-summary')renderSummary();
   if(id==='tab-history')renderHistory();
+  if(id==='tab-settings')renderSettings();
   if(id==='tab-quick-sale')qsInit();
   if(id==='tab-quick-buy')qbInit();
 }
@@ -1112,6 +1139,50 @@ async function qbSubmit(){
   if(err)msg+='\n⚠ '+err+'件エラー:\n'+errMsg.join('\n');
   alert(msg);
   if(err===0){qbRows=[qbNewRow()];qbRender();}
+}
+
+// ========== 設定・リセット ==========
+function renderSettings(){
+  document.getElementById('settings-counts').innerHTML=
+    '在庫品目：<strong>'+inventory.length+'</strong> 件<br>'
+    +'入出庫履歴：<strong>'+histData.length+'</strong> 件<br>'
+    +'圃場マスタ：<strong>'+fields.length+'</strong> 件<br>'
+    +'仕入先マスタ：<strong>'+suppliers.length+'</strong> 件<br>'
+    +'販売先マスタ：<strong>'+customers.length+'</strong> 件';
+  document.getElementById('reset-confirm').value='';
+  document.getElementById('reset-status').textContent='';
+}
+async function deleteAllInCollection(name){
+  var snap=await db.collection(name).get();
+  var batchSize=400,docs=snap.docs;
+  for(var i=0;i<docs.length;i+=batchSize){
+    var batch=db.batch();
+    docs.slice(i,i+batchSize).forEach(function(d){batch.delete(d.ref);});
+    await batch.commit();
+  }
+  return docs.length;
+}
+async function doReset(){
+  if(v('reset-confirm').trim()!=='リセット'){alert('確認のため、入力欄に「リセット」と入力してください。');return;}
+  if(!confirm('取引・在庫・履歴データをすべて削除します。\n圃場・仕入先・販売先マスタは残ります。\n\nこの操作は取り消せません。本当に実行しますか？'))return;
+  var status=document.getElementById('reset-status');
+  status.style.color='#666';
+  try{
+    status.textContent='削除中...在庫データ';
+    var n1=await deleteAllInCollection('inventory');
+    status.textContent='削除中...履歴データ';
+    var n2=await deleteAllInCollection('history');
+    status.textContent='完了処理中...';
+    await loadAll();
+    renderSettings();
+    status.style.color='#2e7d32';
+    status.textContent='✅ リセット完了：在庫 '+n1+' 件、履歴 '+n2+' 件を削除しました。クリーンな状態から始められます。';
+    alert('✅ リセットが完了しました。\n在庫 '+n1+' 件、履歴 '+n2+' 件を削除しました。');
+  }catch(e){
+    status.style.color='#c62828';
+    status.textContent='⚠ エラー：'+e.message;
+    alert('エラーが発生しました：'+e.message);
+  }
 }
 
 // ========== 品目編集 ==========
